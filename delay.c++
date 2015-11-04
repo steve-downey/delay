@@ -7,14 +7,14 @@ class Delay
 
     T value_;
     std::function<T()> func_;
-    bool evaled;
+    bool evaled_;
 
   public:
-    Delay(T&& t) : value_(t), evaled(true)
+    Delay(T&& t) : value_(t), evaled_(true)
     {}
 
     template<typename Action>
-    Delay(Action&& A) : func_(std::forward<Action>(A)), evaled(false)
+    Delay(Action&& A) : func_(std::forward<Action>(A)), evaled_(false)
     {}
 
     template<typename F, typename... Args>
@@ -23,15 +23,15 @@ class Delay
             return f(std::forward<Args>(args)...);
         };
         func_ = bind;
-        evaled = false;
+        evaled_ = false;
     }
 
     T const& get()
     {
-        if (!evaled)
+        if (!evaled_)
             value_ = func_();
 
-        evaled = true;
+        evaled_ = true;
 
         return value_;
     }
