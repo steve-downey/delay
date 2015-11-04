@@ -18,12 +18,12 @@ class Delay
     {}
 
     template<typename F, typename... Args>
-    Delay(F&& f, Args&&... args) {
-        auto bind  = [&]() {
+    Delay(F&& f, Args&&... args)
+    : func_([&]() {
             return f(std::forward<Args>(args)...);
-        };
-        func_ = bind;
-        evaled_ = false;
+        }),
+      evaled_(false)
+    {
     }
 
     T const& get()
