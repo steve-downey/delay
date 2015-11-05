@@ -30,6 +30,7 @@ else()
 endif()
 
 include_directories(include)
+include_directories(./)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -ftemplate-backtrace-limit=0")
