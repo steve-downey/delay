@@ -23,8 +23,8 @@ class Delay
 
     template<typename F, typename... Args>
     Delay(F&& f, Args&&... args)
-    : func_([&]() {
-            return f(std::forward<Args>(args)...);
+    : func_([=, &f]() {
+            return f(args...);
         }),
       evaled_(false)
     {
