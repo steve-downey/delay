@@ -5,16 +5,16 @@
 
 #include <functional>
 
-template <typename T>
+template <typename Value>
 class Delay
 {
 
-    T value_;
-    std::function<T()> func_;
+    Value value_;
+    std::function<Value()> func_;
     bool evaled_;
 
   public:
-    Delay(T&& t) : value_(t), evaled_(true)
+    Delay(Value&& value) : value_(value), evaled_(true)
     {}
 
     template<typename Action>
@@ -30,7 +30,7 @@ class Delay
     {
     }
 
-    T const& get()
+    Value const& get()
     {
         if (!evaled_)
             value_ = func_();
@@ -40,7 +40,7 @@ class Delay
         return value_;
     }
 
-    operator T()
+    operator Value()
     {
         return get();
     }
