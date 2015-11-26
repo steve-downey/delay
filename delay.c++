@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include <delay.h>
+#include <stream.h>
 
 int func()
 {
@@ -64,4 +65,13 @@ int main(int argc, char **argv)
     std::cout << "d6:" << D6.get() << '\n';
     std::cout << "d7:" << D7.get() << '\n';
 
+
+    ConsCell<int> cc1;
+    ConsCell<int> cc2(1);
+
+    ConsStream<int> cs1;
+    ConsStream<int> cs2(1);
+
+    std::cout << "cs1:" << cs1.isEmpty() << '\n';
+    std::cout << "cs2:" << cs2.isEmpty() << '\n';
  }
