@@ -20,6 +20,9 @@ else()
   set(MEMORYCHECK_COMMAND_OPTIONS "--trace-children=yes --leak-check=full")
 endif()
 
+add_subdirectory(googletest)
+add_subdirectory(tests)
+
 include_directories(include)
 include_directories(./)
 
