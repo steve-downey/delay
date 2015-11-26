@@ -20,12 +20,6 @@ else()
   set(MEMORYCHECK_COMMAND_OPTIONS "--trace-children=yes --leak-check=full")
 endif()
 
-add_subdirectory(googletest)
-add_subdirectory(tests)
-
-include_directories(include)
-include_directories(./)
-
 if(CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -ftemplate-backtrace-limit=0")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -march=native")
@@ -42,4 +36,17 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 
-add_executable(delay delay.c++ stream.c++)
+add_subdirectory(googletest)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+add_subdirectory(lib)
+add_subdirectory(tests)
+
+include_directories(include)
+include_directories(./)
+include_directories(lib)
+
+
+
+add_executable(delay delay.c++)
+target_link_libraries(delay lazystream)
