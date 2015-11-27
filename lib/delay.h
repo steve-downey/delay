@@ -8,21 +8,26 @@
 
 template <typename Value>
 class Delay {
-  mutable Value value_;
   std::function<Value()> func_;
+  mutable Value value_;
   mutable bool evaled_;
+
+  using Func = std::function<Value()>;
+  template<typename Action>
+  using isFuncConv = std::is_convertible<Action, Func>;
 
 public:
   Delay(Value &&value) : value_(value), evaled_(true) {
   }
 
-  template <typename Action>
+  template <typename Action,
+            typename = typename std::enable_if<isFuncConv<Action>::value>::type>
   Delay(Action &&A) : func_(std::forward<Action>(A)), evaled_(false) {
   }
 
   template <typename F, typename... Args>
   Delay(F &&f, Args &&... args)
-      : func_([=, &f]() { return f(args...); }), evaled_(false) {
+      : func_([=, f_ = std::forward<F>(f)]() { return f_(args...); }), evaled_(false) {
   }
 
   Value const &get() const {
