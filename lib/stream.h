@@ -16,12 +16,12 @@ class ConsCell {
     ConsStream<Value> tail_;
 
   public:
-    ConsCell(Value v, ConsStream<Value> stream)
+    ConsCell(Value const& v, ConsStream<Value> const& stream)
     : head_(v),
       tail_(stream)
     {}
 
-    ConsCell(Value v)
+    ConsCell(Value const& v)
     : head_(v),
       tail_()
     {}
@@ -31,6 +31,13 @@ class ConsCell {
       tail_()
     {}
 
+    Value head() const {
+        return head_.value();
+    }
+
+    ConsStream<Value> tail() const {
+        return tail_;
+    }
 };
 
 template<typename Value>
@@ -50,6 +57,15 @@ class ConsStream
     bool isEmpty() const {
         return !delayed_cell_;
     }
+
+    Value head() const {
+        return force(*delayed_cell_).head();
+    }
+
+    ConsStream<Value> tail() const {
+        return force(*delayed_cell_).tail();
+    }
+
 };
 
 #endif
