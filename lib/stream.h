@@ -15,11 +15,11 @@ class ConsCell {
   ConsStream<Value> tail_;
 
 public:
-  ConsCell(Value const &v, ConsStream<Value> const &stream)
+  ConsCell(Value const& v, ConsStream<Value> const& stream)
       : head_(v), tail_(stream) {
   }
 
-  ConsCell(Value const &v) : head_(v), tail_() {
+  ConsCell(Value const& v) : head_(v), tail_() {
   }
 
   ConsCell() : head_(), tail_() {
