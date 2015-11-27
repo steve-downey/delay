@@ -13,6 +13,8 @@ find_package(Git)
 include(CTest)
 enable_testing()
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 find_program(MEMORYCHECK_COMMAND valgrind)
 if(MEMORYCHECK_COMMAND-NOTFOUND)
   message("[W] Valgrind not found")
