@@ -43,6 +43,11 @@ public:
             [value]() { return ConsCell<Value>(value); })) {
   }
 
+  template<typename Func>
+  ConsStream(Func&& f)
+      : delayed_cell_(std::make_shared<Delay<ConsCell<Value>>>(f)) {
+  }
+
   bool isEmpty() const {
     return !delayed_cell_;
   }

@@ -48,4 +48,22 @@ TEST_F(StreamTest, breathingTest) {
     EXPECT_TRUE(str3.isEmpty());
 
 }
+
+ConsStream<int> rangeFrom(int n, int m) {
+  if (n > m) {
+    return ConsStream<int>();
+  }
+  return ConsStream<int>([n, m]() {
+      return ConsCell<int>(n, rangeFrom(n+1, m));
+    });
+}
+
+TEST_F(StreamTest, finiteStream) {
+  ConsStream<int> stream = rangeFrom(0, 2);
+  EXPECT_EQ(0, stream.head());
+  EXPECT_EQ(1, stream.tail().head());
+  EXPECT_EQ(2, stream.tail().tail().head());
+  EXPECT_TRUE(stream.tail().tail().tail().isEmpty());
+}
+
 }
