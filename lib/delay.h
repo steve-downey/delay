@@ -5,13 +5,15 @@
 
 #include <functional>
 
+#include <iostream>
+
 template <typename Value>
 class Delay
 {
 
-    Value value_;
+    mutable Value value_;
     std::function<Value()> func_;
-    bool evaled_;
+    mutable bool evaled_;
 
   public:
     Delay(Value&& value) : value_(value), evaled_(true)
@@ -30,7 +32,7 @@ class Delay
     {
     }
 
-    Value const& get()
+    Value const& get() const
     {
         if (!evaled_)
             value_ = func_();
@@ -40,10 +42,20 @@ class Delay
         return value_;
     }
 
-    operator Value()
+    operator Value const&() const
     {
         return get();
     }
 };
+
+template<typename Value>
+Value const& force(const Delay<Value>& delay)  {
+    return delay;
+}
+
+template<typename Value>
+Value const& force(Delay<Value>&& delay)  {
+    return std::move(delay);
+}
 
 #endif

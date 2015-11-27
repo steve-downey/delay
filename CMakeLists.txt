@@ -10,8 +10,9 @@ project(Stream CXX)
 
 find_package(Git)
 
-enable_testing()
 include(CTest)
+enable_testing()
+
 find_program(MEMORYCHECK_COMMAND valgrind)
 if(MEMORYCHECK_COMMAND-NOTFOUND)
   message("[W] Valgrind not found")
@@ -39,12 +40,13 @@ endif()
 add_subdirectory(googletest)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-add_subdirectory(lib)
-add_subdirectory(tests)
-
 include_directories(include)
 include_directories(./)
 include_directories(lib)
+
+add_subdirectory(lib)
+add_subdirectory(tests)
+
 
 
 
