@@ -3,13 +3,14 @@
 #define INCLUDED_DELAY
 
 #include <functional>
+#include <experimental/optional>
 
 #include <iostream>
 
 template <typename Value>
 class Delay {
   std::function<Value()> func_;
-  mutable Value value_;
+  mutable std::experimental::optional<Value>  value_;
   mutable bool evaled_;
 
   using Func = std::function<Value()>;
@@ -38,7 +39,7 @@ public:
 
     evaled_ = true;
 
-    return value_;
+    return value_.value();
   }
 
   operator Value const&() const {
@@ -47,7 +48,7 @@ public:
 };
 
 template <typename Value>
-Value const& force(const Delay<Value>& delay) {
+Value const& force(Delay<Value> const& delay) {
   return delay;
 }
 

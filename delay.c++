@@ -66,7 +66,6 @@ int main(int argc, char **argv)
     std::cout << "d7:" << D7.get() << '\n';
 
 
-    ConsCell<int> cc1;
     ConsCell<int> cc2(1);
 
     ConsStream<int> cs1;

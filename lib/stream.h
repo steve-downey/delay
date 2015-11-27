@@ -11,7 +11,7 @@ class ConsStream;
 
 template <typename Value>
 class ConsCell {
-  std::experimental::optional<Value> head_;
+  Value head_;
   ConsStream<Value> tail_;
 
 public:
@@ -22,11 +22,8 @@ public:
   ConsCell(Value const& v) : head_(v), tail_() {
   }
 
-  ConsCell() : head_(), tail_() {
-  }
-
   Value head() const {
-    return head_.value();
+    return head_;
   }
 
   ConsStream<Value> tail() const {
@@ -39,8 +36,7 @@ class ConsStream {
   std::shared_ptr<Delay<ConsCell<Value>>> delayed_cell_;
 
 public:
-  ConsStream() {
-  }
+  ConsStream() = default;
 
   ConsStream(Value value)
       : delayed_cell_(std::make_shared<Delay<ConsCell<Value>>>(

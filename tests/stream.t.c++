@@ -24,7 +24,7 @@ public:
 
 TEST_F(StreamTest, breathingTest) {
 
-    ConsCell<int> cc1;
+    //    ConsCell<int> cc1;
     ConsCell<int> cc2(1);
 
     ConsStream<int> cs1;
@@ -33,12 +33,12 @@ TEST_F(StreamTest, breathingTest) {
     EXPECT_TRUE(cs1.isEmpty());
     EXPECT_FALSE(cs2.isEmpty());
 
-    int i = -1;
-    EXPECT_THROW({
-            i = cc1.head();
-        }, std::experimental::bad_optional_access);
+    // int i = -1;
+    // EXPECT_THROW({
+    //         i = cc1.head();
+    //     }, std::experimental::bad_optional_access);
 
-    EXPECT_EQ(-1, i);
+    // EXPECT_EQ(-1, i);
 
     int j = -1;
     EXPECT_NO_THROW({
@@ -46,10 +46,10 @@ TEST_F(StreamTest, breathingTest) {
         });
     EXPECT_EQ(1, j);
 
-    ConsStream<int> str1 = cc1.tail();
+    // ConsStream<int> str1 = cc1.tail();
     ConsStream<int> str2 = cc2.tail();
 
-    EXPECT_TRUE(str1.isEmpty());
+    // EXPECT_TRUE(str1.isEmpty());
     EXPECT_TRUE(str2.isEmpty());
 
     int k = cs2.head();
