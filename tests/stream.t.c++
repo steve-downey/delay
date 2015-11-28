@@ -64,6 +64,26 @@ TEST_F(StreamTest, finiteStream) {
   EXPECT_EQ(1, stream.tail().head());
   EXPECT_EQ(2, stream.tail().tail().head());
   EXPECT_TRUE(stream.tail().tail().tail().isEmpty());
+
+  ConsStream<int>::iterator i = stream.begin();
+  ConsStream<int>::iterator e = stream.end();
+
+  EXPECT_EQ(0, *i);
+  i++;
+  EXPECT_EQ(1, *i);
+  i++;
+  EXPECT_EQ(2, *i);
+  i++;
+  EXPECT_EQ(i, e);
+
+  int k = 0;
+  for(auto const& a : stream) {
+    EXPECT_EQ(k, a);
+    ++k;
+  }
 }
 
+
 }
+
+template class ConsStreamIterator<int>;
