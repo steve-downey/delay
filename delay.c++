@@ -69,8 +69,14 @@ int main(int argc, char **argv)
     ConsCell<int> cc2(1);
 
     ConsStream<int> cs1;
-    ConsStream<int> cs2(1);
+    ConsStream<int> cs2 = make_stream(1);
+    ConsStream<int> cs2a(1);
 
     std::cout << "cs1:" << cs1.isEmpty() << '\n';
     std::cout << "cs2:" << cs2.isEmpty() << '\n';
+    std::cout << "cs2a:" << cs2a.isEmpty() << '\n';
+
+    ConsStream<int> cs3(cs2);
+    std::cout << "cs3:" << cs3.isEmpty() << '\n';
+
  }

@@ -28,7 +28,7 @@ public:
 
   template <typename F, typename... Args>
   Delay(F&& f, Args&&... args)
-      : func_([ =, f_ = std::forward<F>(f) ]() { return f_(args...); }),
+      : func_([args..., f_ = std::forward<F>(f) ]() { return f_(args...); }),
         evaled_(false) {
   }
 

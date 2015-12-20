@@ -52,7 +52,8 @@ public:
             [value]() { return ConsCell<Value>(value); })) {
   }
 
-  template <typename Func>
+  template <typename Func,
+            typename = typename std::enable_if<!std::is_convertible<Func, ConsStream>::value>::type>
   ConsStream(Func&& f)
       : delayed_cell_(std::make_shared<Delay<ConsCell<Value>>>(f)) {
   }
@@ -80,6 +81,11 @@ public:
   }
 
 };
+
+template <typename Value>
+ConsStream<Value> make_stream(Value v) {
+  return ConsStream<Value>([v]() {return v;});
+}
 
 template <typename Value>
 class ConsStreamIterator : public std::iterator<std::forward_iterator_tag,
@@ -135,5 +141,33 @@ public:
   }
 
 };
+
+template<typename Value>
+ConsStream<Value> rangeFrom(Value n, Value m) {
+  if (n > m) {
+    return ConsStream<Value>();
+  }
+  return ConsStream<Value>([n, m]() {
+      return ConsCell<Value>(n, rangeFrom(n+1, m));
+    });
+}
+
+template<typename Value>
+ConsStream<Value> iota(Value n = Value()) {
+  return ConsStream<Value>([n]() {
+      return ConsCell<Value>(n, iota(n+1));
+    });
+}
+
+template<typename Value>
+ConsStream<Value> take(ConsStream<Value> const& strm, int n) {
+  if (n == 0 || strm.isEmpty()) {
+    return ConsStream<Value>();
+  }
+  return ConsStream<Value>([strm, n]() {
+      return ConsCell<Value>(strm.head(), take(strm.tail(), n-1));
+    });
+}
+
 
 #endif
