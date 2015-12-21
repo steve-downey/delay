@@ -19,7 +19,6 @@ class ConsCell {
   ConsStream<Value> tail_;
 
   friend class ConsStreamIterator<Value>;
-  friend class ConsStreamIterator<const Value>;
 
 public:
   ConsCell(Value const& v, ConsStream<Value> const& stream)
@@ -180,5 +179,16 @@ ConsStream<Value> concat(ConsStream<Value> const& first,
     });
 }
 
+template<typename Value, typename Func>
+auto fmap(ConsStream<Value> const& stream, Func f)
+  -> ConsStream<decltype(f(stream.head()))> {
+  using Mapped = decltype(f(stream.head()));
+  if (stream.isEmpty()){
+    return ConsStream<Mapped>();
+  }
+  return ConsStream<Mapped>([stream, f]() {
+      return ConsCell<Mapped>(f(stream.head()), fmap(stream.tail(), f));
+    });
+}
 
 #endif

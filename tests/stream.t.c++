@@ -143,6 +143,31 @@ TEST_F(StreamTest, concatStream) {
     ++k;
   }
 }
+
+TEST_F(StreamTest, fmapStream) {
+  ConsStream<int> inf = iota(0);
+
+  ConsStream<int> square = fmap(inf, [](int i){return i*i;});
+  ConsStream<int> front = take(square, 5);
+
+  std::vector<int> v{0,1,4,9,16,25};
+  int k = 0;
+  for(auto const& a : front) {
+    EXPECT_EQ(v[k], a);
+    ++k;
+  }
+
+  ConsStream<double> square2 = fmap(inf, [](int i) -> double {return i*i;});
+  ConsStream<double> front2 = take(square2, 5);
+
+  std::vector<int> v2{0,1,4,9,16,25};
+  int k2 = 0;
+  for(auto const& a : front2) {
+    EXPECT_EQ(v2[k2], a);
+    ++k2;
+  }
+
+}
 }
 
 template class ConsStreamIterator<int>;
