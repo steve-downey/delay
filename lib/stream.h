@@ -169,5 +169,16 @@ ConsStream<Value> take(ConsStream<Value> const& strm, int n) {
     });
 }
 
+template<typename Value>
+ConsStream<Value> concat(ConsStream<Value> const& first,
+                         ConsStream<Value> const& second) {
+  if (first.isEmpty()) {
+    return second;
+  }
+  return ConsStream<Value>([first, second]() {
+      return ConsCell<Value>(first.head(), concat(first.tail(), second));
+    });
+}
+
 
 #endif

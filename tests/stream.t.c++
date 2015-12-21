@@ -129,6 +129,20 @@ TEST_F(StreamTest, takeInfStream) {
     ++k;
   }
 }
+
+TEST_F(StreamTest, concatStream) {
+  ConsStream<int> inf = iota(0);
+  ConsStream<int> s1 = take(inf, 3);
+  ConsStream<int> s2 = take(iota(1), 3);
+  ConsStream<int> c = concat(s1, s2);
+
+  std::vector<int> v{0,1,2,1,2,3};
+  int k = 0;
+  for(auto const& a : c) {
+    EXPECT_EQ(v[k], a);
+    ++k;
+  }
+}
 }
 
 template class ConsStreamIterator<int>;
