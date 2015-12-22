@@ -26,12 +26,6 @@ public:
   Delay(Action&& A) : func_(std::forward<Action>(A)), evaled_(false) {
   }
 
-  template <typename F, typename... Args>
-  Delay(F&& f, Args&&... args)
-      : func_([args..., f_ = std::forward<F>(f) ]() { return f_(args...); }),
-        evaled_(false) {
-  }
-
   Value const& get() const {
     if (!evaled_) {
       value_ = func_();
@@ -56,5 +50,12 @@ template <typename Value>
 Value const& force(Delay<Value>&& delay) {
   return std::move(delay);
 }
+
+template <typename F, typename... Args>
+auto delay(F&& f, Args&&... args) -> Delay<decltype(f(args...))> {
+  using Value = decltype(f(args...));
+  return Delay<Value>([args..., f_ = std::forward<F>(f) ]() { return f_(args...); });
+}
+
 
 #endif

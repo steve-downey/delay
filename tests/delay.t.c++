@@ -64,9 +64,9 @@ TEST_F(DelayTest, breathingTest) {
 
   Delay<int> D5([]() { return func2(7); });
 
-  Delay<int> D6(func2, 8);
+  Delay<int> D6 = delay(func2, 8);
 
-  Delay<int> D7(func3, 8, 1);
+  Delay<int> D7 = delay(func3, 8, 1);
 
   EXPECT_EQ(1, func_called);
   EXPECT_EQ(1, func2_called);

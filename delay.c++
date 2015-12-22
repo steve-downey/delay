@@ -39,9 +39,9 @@ int main(int argc, char **argv)
 
     Delay<int> D5([]() {return func2(7);});
 
-    Delay<int> D6(func2, 8);
+    Delay<int> D6 = delay(func2, 8);
 
-    Delay<int> D7(func3, 8, 1);
+    Delay<int> D7 = delay(func3, 8, 1);
 
     std::cout << "Yes\n";
 
