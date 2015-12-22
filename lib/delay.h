@@ -18,8 +18,12 @@ class Delay {
   using isFuncConv = std::is_convertible<Action, Func>;
 
 public:
+  Delay(Value const& value)
+      : value_(value), evaled_(true) {
+  }
+
   Delay(Value&& value)
-      : value_(std::forward<Value>(value)), evaled_(true) {
+      : value_(std::move(value)), evaled_(true) {
   }
 
   template <typename Action,

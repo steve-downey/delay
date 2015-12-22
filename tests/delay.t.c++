@@ -43,6 +43,10 @@ int func3(int i, int j) {
   return i + j;
 }
 
+std::string stringTest(const char* str) {
+  return str;
+}
+
 TEST_F(DelayTest, breathingTest) {
   Delay<int> D1(1);
 
@@ -105,5 +109,21 @@ TEST_F(DelayTest, breathingTest) {
 
   EXPECT_EQ(5, Delay<int>(func).get());
   EXPECT_EQ(5, force(Delay<int>(func)));
+}
+
+TEST_F(DelayTest, moveTest) {
+  std::string str;
+  Delay<std::string> d1(str);
+  Delay<std::string> d2("test");
+  Delay<std::string> d3 = delay(stringTest, "this is a test");
+  Delay<std::string> d4([](){return stringTest("another test");});
+
+  EXPECT_TRUE(d1.isForced());
+  EXPECT_TRUE(d2.isForced());
+  EXPECT_FALSE(d3.isForced());
+  EXPECT_FALSE(d4.isForced());
+
+  EXPECT_EQ(std::string("this is a test"), force(d3));
+  EXPECT_EQ(std::string("another test"), force(d4));
 }
 }
