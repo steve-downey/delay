@@ -52,7 +52,8 @@ public:
   }
 
   template <typename Func,
-            typename = typename std::enable_if<!std::is_convertible<Func, ConsStream>::value>::type>
+            typename = typename std::enable_if<!std::is_convertible<Func, ConsStream>::value>::type
+            >
   ConsStream(Func&& f)
       : delayed_cell_(std::make_shared<Delay<ConsCell<Value>>>(f)) {
   }
@@ -79,6 +80,19 @@ public:
     return iterator();
   }
 
+  int countForced() {
+    if (!delayed_cell_) {
+      return 0;
+    }
+
+    auto cell = delayed_cell_;
+    int forced = 0;
+    while (cell && cell->isForced()) {
+      ++forced;
+      cell = cell->get().tail().delayed_cell_;
+    }
+    return forced;
+  }
 };
 
 template <typename Value>
@@ -142,6 +156,13 @@ public:
 };
 
 template<typename Value>
+ConsStream<Value> cons(Value n, ConsStream<Value> const& stream) {
+  return ConsStream<Value>([n, stream]() {
+      return ConsCell<Value>(n, stream);
+    });
+}
+
+template<typename Value>
 ConsStream<Value> rangeFrom(Value n, Value m) {
   if (n > m) {
     return ConsStream<Value>();
@@ -169,15 +190,16 @@ ConsStream<Value> take(ConsStream<Value> const& strm, int n) {
 }
 
 template<typename Value>
-ConsStream<Value> concat(ConsStream<Value> const& first,
-                         ConsStream<Value> const& second) {
+ConsStream<Value> plus(ConsStream<Value> const& first,
+                       ConsStream<Value> const& second) {
   if (first.isEmpty()) {
     return second;
   }
   return ConsStream<Value>([first, second]() {
-      return ConsCell<Value>(first.head(), concat(first.tail(), second));
+      return ConsCell<Value>(first.head(), plus(first.tail(), second));
     });
 }
+
 
 template<typename Value, typename Func>
 auto fmap(ConsStream<Value> const& stream, Func f)
@@ -188,6 +210,59 @@ auto fmap(ConsStream<Value> const& stream, Func f)
   }
   return ConsStream<Mapped>([stream, f]() {
       return ConsCell<Mapped>(f(stream.head()), fmap(stream.tail(), f));
+    });
+}
+
+/*
+  foldr            :: (a -> b -> b) -> b -> [a] -> b
+  foldr f z []     =  z
+  foldr f z (x:xs) =  f x (foldr f z xs)
+*/
+template<typename Value, typename Result, typename Op>
+Result foldr(Op op, Result const& init, ConsStream<Value> const& stream ) {
+  if (stream.isEmpty()) {
+    return init;
+  }
+  return op(stream.head(),
+            foldr(op, init, stream.tail()));
+}
+
+/*
+  concat :: [[a]] -> [a]
+  concat xss = foldr (++) [] xss
+*/
+
+template<typename Value>
+ConsStream<Value> concat(ConsStream<ConsStream<Value>> streams) {
+  while (!streams.isEmpty()
+         && streams.head().isEmpty()) {
+    streams = streams.tail();
+  }
+
+  if (streams.isEmpty()) {
+    return ConsStream<Value>();
+  }
+
+  return foldr(plus<Value>,
+               ConsStream<Value>(),
+               streams);
+}
+
+template<typename Value>
+ConsStream<Value> join(ConsStream<ConsStream<Value>> streams) {
+  while (!streams.isEmpty()
+         && streams.head().isEmpty()) {
+    streams = streams.tail();
+  }
+
+  if (streams.isEmpty()) {
+    return ConsStream<Value>();
+  }
+
+  return ConsStream<Value>([streams]() {
+      return ConsCell<Value>(streams.head().head(),
+                             plus(streams.head().tail(),
+                                  join(streams.tail())));
     });
 }
 
