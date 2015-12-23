@@ -202,14 +202,28 @@ ConsStream<Value> plus(ConsStream<Value> const& first,
 
 
 template<typename Value, typename Func>
-auto fmap(ConsStream<Value> const& stream, Func f)
+auto fmap(ConsStream<Value> const& stream, Func const& f)
   -> ConsStream<decltype(f(stream.head()))> {
   using Mapped = decltype(f(stream.head()));
   if (stream.isEmpty()){
     return ConsStream<Mapped>();
   }
+
   return ConsStream<Mapped>([stream, f]() {
       return ConsCell<Mapped>(f(stream.head()), fmap(stream.tail(), f));
+    });
+}
+
+template<typename Value, typename Func>
+auto fmap0(ConsStream<Value> const& stream, Func const& f)
+  -> ConsStream<decltype(f())> {
+  using Mapped = decltype(f());
+  if (stream.isEmpty()){
+    return ConsStream<Mapped>();
+  }
+
+  return ConsStream<Mapped>([stream, f]() {
+      return ConsCell<Mapped>(f(), fmap0(stream.tail(), f));
     });
 }
 
@@ -231,7 +245,7 @@ Result foldr(Op op, Result const& init, ConsStream<Value> const& stream ) {
   concat :: [[a]] -> [a]
   concat xss = foldr (++) [] xss
 */
-
+// Note - copy streams, because we're going to reassign to it
 template<typename Value>
 ConsStream<Value> concat(ConsStream<ConsStream<Value>> streams) {
   while (!streams.isEmpty()
@@ -248,6 +262,7 @@ ConsStream<Value> concat(ConsStream<ConsStream<Value>> streams) {
                streams);
 }
 
+// Note - copy streams, because we're going to reassign to itx
 template<typename Value>
 ConsStream<Value> join(ConsStream<ConsStream<Value>> streams) {
   while (!streams.isEmpty()
@@ -264,6 +279,18 @@ ConsStream<Value> join(ConsStream<ConsStream<Value>> streams) {
                              plus(streams.head().tail(),
                                   join(streams.tail())));
     });
+}
+
+template<typename Value, typename Func>
+auto bind(ConsStream<Value> const& stream, Func const& f) -> decltype(f(stream.head()))
+{
+  return join(fmap(stream, f));
+}
+
+template<typename Value, typename Func>
+auto then(ConsStream<Value> const& stream, Func const& f) -> decltype(f())
+{
+  return join(fmap0(stream, f));
 }
 
 #endif

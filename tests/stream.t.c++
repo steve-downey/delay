@@ -264,6 +264,47 @@ TEST_F(StreamTest, joinStreamList) {
 
 }
 
+TEST_F(StreamTest, joinStreamList2) {
+  ConsStream<int> inf = iota(0);
+  ConsStream<int> s3 = join(fmap(inf, [](int i){return rangeFrom(0, i);}));
+
+  ConsStream<int> c = take(s3, 6);
+
+  std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
+  int k = 0;
+  for(auto const& a : c) {
+    EXPECT_EQ(v[k], a);
+    ++k;
+  }
+  EXPECT_EQ(6, k);
+
+  EXPECT_EQ(4, inf.countForced());
+  EXPECT_EQ(6, s3.countForced());
+
+}
+
+TEST_F(StreamTest, bindStreamList) {
+  ConsStream<int> inf = iota(0);
+  ConsStream<int> s3 = bind(inf,
+                            [](int i){return rangeFrom(0, i);});
+
+  EXPECT_EQ(0, s3.head());
+
+  ConsStream<int> c = take(s3, 6);
+
+  std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
+  int k = 0;
+  for(auto const& a : c) {
+    EXPECT_EQ(v[k], a);
+    ++k;
+  }
+  EXPECT_EQ(6, k);
+
+  EXPECT_EQ(4, inf.countForced());
+  EXPECT_EQ(6, s3.countForced());
+
+}
+
 }
 
 template class ConsStreamIterator<int>;
