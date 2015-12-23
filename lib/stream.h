@@ -214,19 +214,6 @@ auto fmap(ConsStream<Value> const& stream, Func const& f)
     });
 }
 
-template<typename Value, typename Func>
-auto fmap0(ConsStream<Value> const& stream, Func const& f)
-  -> ConsStream<decltype(f())> {
-  using Mapped = decltype(f());
-  if (stream.isEmpty()){
-    return ConsStream<Mapped>();
-  }
-
-  return ConsStream<Mapped>([stream, f]() {
-      return ConsCell<Mapped>(f(), fmap0(stream.tail(), f));
-    });
-}
-
 /*
   foldr            :: (a -> b -> b) -> b -> [a] -> b
   foldr f z []     =  z
@@ -290,7 +277,7 @@ auto bind(ConsStream<Value> const& stream, Func const& f) -> decltype(f(stream.h
 template<typename Value, typename Func>
 auto then(ConsStream<Value> const& stream, Func const& f) -> decltype(f())
 {
-  return join(fmap0(stream, f));
+  return join(fmap(stream, [f](Value const&){return f();}));
 }
 
 #endif

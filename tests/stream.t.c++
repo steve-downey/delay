@@ -305,6 +305,28 @@ TEST_F(StreamTest, bindStreamList) {
 
 }
 
+TEST_F(StreamTest, thenStreamList) {
+  ConsStream<int> inf = iota(0);
+  ConsStream<int> s3 = then(inf,
+                            [](){return rangeFrom(0, 2);});
+
+  EXPECT_EQ(0, s3.head());
+
+  ConsStream<int> c = take(s3, 6);
+
+  std::vector<int> v{0,1,2,0,1,2,0,1,2,0};
+  int k = 0;
+  for(auto const& a : c) {
+    EXPECT_EQ(v[k], a);
+    ++k;
+  }
+  EXPECT_EQ(6, k);
+
+  EXPECT_EQ(3, inf.countForced());
+  EXPECT_EQ(6, s3.countForced());
+
+}
+
 }
 
 template class ConsStreamIterator<int>;
