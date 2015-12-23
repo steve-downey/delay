@@ -145,7 +145,7 @@ TEST_F(StreamTest, concatStream) {
   ConsStream<int> inf = iota(0);
   ConsStream<int> s1 = take(inf, 3);
   ConsStream<int> s2 = take(iota(1), 3);
-  ConsStream<int> c = plus(s1, s2);
+  ConsStream<int> c = append(s1, s2);
 
   std::vector<int> v{0,1,2,1,2,3};
   int k = 0;
@@ -198,7 +198,7 @@ TEST_F(StreamTest, countForced) {
   EXPECT_EQ(3, inf.countForced());
 
   ConsStream<int> iota3 = iota(3);
-  ConsStream<int> inf2 = plus(take3, iota3);
+  ConsStream<int> inf2 = append(take3, iota3);
   EXPECT_EQ(0, inf2.head());
   EXPECT_EQ(1, inf2.countForced());
   EXPECT_EQ(0, iota3.countForced());

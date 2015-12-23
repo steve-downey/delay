@@ -190,13 +190,13 @@ ConsStream<Value> take(ConsStream<Value> const& strm, int n) {
 }
 
 template<typename Value>
-ConsStream<Value> plus(ConsStream<Value> const& first,
-                       ConsStream<Value> const& second) {
+ConsStream<Value> append(ConsStream<Value> const& first,
+                         ConsStream<Value> const& second) {
   if (first.isEmpty()) {
     return second;
   }
   return ConsStream<Value>([first, second]() {
-      return ConsCell<Value>(first.head(), plus(first.tail(), second));
+      return ConsCell<Value>(first.head(), append(first.tail(), second));
     });
 }
 
@@ -244,7 +244,7 @@ ConsStream<Value> concat(ConsStream<ConsStream<Value>> streams) {
     return ConsStream<Value>();
   }
 
-  return foldr(plus<Value>,
+  return foldr(append<Value>,
                ConsStream<Value>(),
                streams);
 }
@@ -263,8 +263,8 @@ ConsStream<Value> join(ConsStream<ConsStream<Value>> streams) {
 
   return ConsStream<Value>([streams]() {
       return ConsCell<Value>(streams.head().head(),
-                             plus(streams.head().tail(),
-                                  join(streams.tail())));
+                             append(streams.head().tail(),
+                                    join(streams.tail())));
     });
 }
 
