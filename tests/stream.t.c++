@@ -327,6 +327,30 @@ TEST_F(StreamTest, thenStreamList) {
 
 }
 
+TEST_F(StreamTest, guard) {
+  EXPECT_FALSE(guard(true).isEmpty());
+  EXPECT_TRUE(guard(false).isEmpty());
+}
+}
+
+namespace {
+class NoDefault
+{
+public:
+  NoDefault(int);
+  NoDefault() = delete;
+};
+
+class NoMove
+{
+public:
+  NoMove(NoMove&&) = delete;
+  NoMove(NoMove const&){};
+  NoMove& operator=(NoMove const&){return *this;};
+};
 }
 
 template class ConsStreamIterator<int>;
+template class ConsStream<std::string>;
+template class ConsStream<NoDefault>;
+template class ConsStream<NoMove>;

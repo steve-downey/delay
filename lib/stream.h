@@ -6,6 +6,7 @@
 #include <experimental/optional>
 #include <iterator>
 #include <memory>
+#include <tuple>
 
 template <typename Value>
 class ConsStream;
@@ -25,14 +26,15 @@ public:
       : head_(v), tail_(stream) {
   }
 
+  explicit
   ConsCell(Value const& v) : head_(v), tail_() {
   }
 
-  Value head() const {
+  Value const& head() const {
     return head_;
   }
 
-  ConsStream<Value> tail() const {
+  ConsStream<Value> const& tail() const {
     return tail_;
   }
 };
@@ -97,7 +99,7 @@ public:
 
 template <typename Value>
 ConsStream<Value> make_stream(Value v) {
-  return ConsStream<Value>([v]() {return v;});
+  return ConsStream<Value>([v]() {return ConsCell<Value>(v);});
 }
 
 template <typename Value>
@@ -269,15 +271,20 @@ ConsStream<Value> join(ConsStream<ConsStream<Value>> streams) {
 }
 
 template<typename Value, typename Func>
-auto bind(ConsStream<Value> const& stream, Func const& f) -> decltype(f(stream.head()))
-{
+auto bind(ConsStream<Value> const& stream, Func const& f) -> decltype(f(stream.head())) {
   return join(fmap(stream, f));
 }
 
 template<typename Value, typename Func>
-auto then(ConsStream<Value> const& stream, Func const& f) -> decltype(f())
-{
+auto then(ConsStream<Value> const& stream, Func const& f) -> decltype(f()) {
   return join(fmap(stream, [f](Value const&){return f();}));
 }
 
+ConsStream<std::tuple<> > guard(bool b) {
+  if (b) {
+    return ConsStream<std::tuple<>>(std::tuple<>());
+  } else {
+    return ConsStream<std::tuple<>>();
+  }
+}
 #endif
