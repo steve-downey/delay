@@ -331,7 +331,38 @@ TEST_F(StreamTest, guard) {
   EXPECT_FALSE(guard(true).isEmpty());
   EXPECT_TRUE(guard(false).isEmpty());
 }
+
+
+ConsStream<std::tuple<int, int, int>> triples() {
+  return bind(iota(1), [](int z) {
+      return bind(rangeFrom(1, z), [z](int x) {
+          return bind(rangeFrom(x, z), [x, z](int y) {
+              return then(guard(x*x + y*y == z*z), [x, y, z]() {
+                  return make_consstream(std::make_tuple(x, y, z));
+                });
+            });
+        });
+    });
 }
+
+TEST_F(StreamTest, pythag) {
+  auto trip = triples();
+  EXPECT_EQ(std::make_tuple(3,4,5), trip.head());
+
+  EXPECT_EQ(1, trip.countForced());
+
+  auto tenTrips = take(trip, 10);
+
+  std::tuple<int,int,int> tenth;
+  for(auto const& a : tenTrips) {
+    tenth = a;
+  }
+  EXPECT_EQ(std::make_tuple(20,21,29), tenth);
+  EXPECT_EQ(10, trip.countForced());
+
+}
+
+} // end namespace
 
 namespace {
 class NoDefault

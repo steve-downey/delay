@@ -287,4 +287,10 @@ ConsStream<std::tuple<> > guard(bool b) {
     return ConsStream<std::tuple<>>();
   }
 }
+
+template<typename Value>
+ConsStream<Value> make_consstream(Value v) {
+  return ConsStream<Value>(v);
+}
+
 #endif
