@@ -10,18 +10,27 @@
 template <typename Value>
 class Delay {
   std::function<Value()> func_;
-  mutable std::experimental::optional<Value> value_;
+  typedef typename std::aligned_storage<sizeof(Value), std::alignment_of<Value>::value>::type Storage;
+
+  mutable Storage value_;
   mutable bool evaled_;
 
   using Func = std::function<Value()>;
   template <typename Action>
   using isFuncConv = std::is_convertible<Action, Func>;
 
+  template <typename Arg>
+  void setValue(Arg&& arg) const {
+    ::new(&value_) Value(std::move(arg));
+    evaled_ = true;
+  }
 public:
-  Delay(Value const& value) : value_(value), evaled_(true) {
+  Delay(Value const& value) : evaled_(true) {
+    ::new(&value_) Value(value);
   }
 
-  Delay(Value&& value) : value_(std::move(value)), evaled_(true) {
+  Delay(Value&& value) : evaled_(true) {
+    ::new(&value_) Value(std::move(value));
   }
 
   template <typename Action,
@@ -29,14 +38,17 @@ public:
   Delay(Action&& A) : func_(std::forward<Action>(A)), evaled_(false) {
   }
 
+  ~Delay() {
+    if (evaled_) {
+      reinterpret_cast<Value*>(std::addressof(this->value_))->~Value();
+    }
+  }
+
   Value const& get() const {
     if (!evaled_) {
-      value_ = func_();
+      setValue(func_());
     }
-
-    evaled_ = true;
-
-    return value_.value();
+    return *reinterpret_cast<Value*>(&value_);
   }
 
   operator Value const&() const {
