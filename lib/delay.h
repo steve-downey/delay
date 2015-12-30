@@ -9,16 +9,17 @@
 
 template <typename Value>
 class Delay {
-  std::function<Value()> func_;
+  using Func = std::function<Value()>;
+  template <typename Action>
+  using isFuncConv = std::is_convertible<Action, Func>;
+
+  Func func_;
+
   typedef typename std::aligned_storage<sizeof(Value),
                                         std::alignment_of<Value>::value>::type
       Storage;
   mutable Storage value_;
   mutable bool evaled_;
-
-  using Func = std::function<Value()>;
-  template <typename Action>
-  using isFuncConv = std::is_convertible<Action, Func>;
 
   template <typename Arg>
   void setValue(Arg&& arg) const {
