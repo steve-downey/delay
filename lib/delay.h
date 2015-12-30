@@ -10,8 +10,9 @@
 template <typename Value>
 class Delay {
   std::function<Value()> func_;
-  typedef typename std::aligned_storage<sizeof(Value), std::alignment_of<Value>::value>::type Storage;
-
+  typedef typename std::aligned_storage<sizeof(Value),
+                                        std::alignment_of<Value>::value>::type
+      Storage;
   mutable Storage value_;
   mutable bool evaled_;
 
@@ -21,16 +22,17 @@ class Delay {
 
   template <typename Arg>
   void setValue(Arg&& arg) const {
-    ::new(&value_) Value(std::move(arg));
+    ::new (&value_) Value(std::move(arg));
     evaled_ = true;
   }
+
 public:
   Delay(Value const& value) : evaled_(true) {
-    ::new(&value_) Value(value);
+    ::new (&value_) Value(value);
   }
 
   Delay(Value&& value) : evaled_(true) {
-    ::new(&value_) Value(std::move(value));
+    ::new (&value_) Value(std::move(value));
   }
 
   template <typename Action,
