@@ -26,8 +26,7 @@ public:
       : head_(v), tail_(stream) {
   }
 
-  explicit
-  ConsCell(Value const& v) : head_(v), tail_() {
+  explicit ConsCell(Value const& v) : head_(v), tail_() {
   }
 
   Value const& head() const {
@@ -39,12 +38,12 @@ public:
   }
 };
 
-
 template <typename Value>
 class ConsStream {
   std::shared_ptr<Delay<ConsCell<Value>>> delayed_cell_;
 
   friend class ConsStreamIterator<Value>;
+
 public:
   ConsStream() = default;
 
@@ -54,8 +53,8 @@ public:
   }
 
   template <typename Func,
-            typename = typename std::enable_if<!std::is_convertible<Func, ConsStream>::value>::type
-            >
+            typename = typename std::enable_if<
+                !std::is_convertible<Func, ConsStream>::value>::type>
   ConsStream(Func&& f)
       : delayed_cell_(std::make_shared<Delay<ConsCell<Value>>>(f)) {
   }
@@ -99,7 +98,7 @@ public:
 
 template <typename Value>
 ConsStream<Value> make_stream(Value v) {
-  return ConsStream<Value>([v]() {return ConsCell<Value>(v);});
+  return ConsStream<Value>([v]() { return ConsCell<Value>(v); });
 }
 
 template <typename Value>
@@ -115,6 +114,7 @@ class ConsStreamIterator : public std::iterator<std::forward_iterator_tag,
   }
 
   friend class ConsStream<Value>;
+
 public:
   ConsStreamIterator() = default; // Default construct gives end.
 
@@ -154,66 +154,60 @@ public:
   Value const* operator->() const {
     return &force(*delayed_cell_).head_;
   }
-
 };
 
-template<typename Value>
+template <typename Value>
 ConsStream<Value> cons(Value n, ConsStream<Value> const& stream) {
-  return ConsStream<Value>([n, stream]() {
-      return ConsCell<Value>(n, stream);
-    });
+  return ConsStream<Value>(
+      [n, stream]() { return ConsCell<Value>(n, stream); });
 }
 
-template<typename Value>
+template <typename Value>
 ConsStream<Value> rangeFrom(Value n, Value m) {
   if (n > m) {
     return ConsStream<Value>();
   }
-  return ConsStream<Value>([n, m]() {
-      return ConsCell<Value>(n, rangeFrom(n+1, m));
-    });
+  return ConsStream<Value>(
+      [n, m]() { return ConsCell<Value>(n, rangeFrom(n + 1, m)); });
 }
 
-template<typename Value>
+template <typename Value>
 ConsStream<Value> iota(Value n = Value()) {
-  return ConsStream<Value>([n]() {
-      return ConsCell<Value>(n, iota(n+1));
-    });
+  return ConsStream<Value>([n]() { return ConsCell<Value>(n, iota(n + 1)); });
 }
 
-template<typename Value>
+template <typename Value>
 ConsStream<Value> take(ConsStream<Value> const& strm, int n) {
   if (n == 0 || strm.isEmpty()) {
     return ConsStream<Value>();
   }
   return ConsStream<Value>([strm, n]() {
-      return ConsCell<Value>(strm.head(), take(strm.tail(), n-1));
-    });
+    return ConsCell<Value>(strm.head(), take(strm.tail(), n - 1));
+  });
 }
 
-template<typename Value>
+template <typename Value>
 ConsStream<Value> append(ConsStream<Value> const& first,
                          ConsStream<Value> const& second) {
   if (first.isEmpty()) {
     return second;
   }
   return ConsStream<Value>([first, second]() {
-      return ConsCell<Value>(first.head(), append(first.tail(), second));
-    });
+    return ConsCell<Value>(first.head(), append(first.tail(), second));
+  });
 }
 
-
-template<typename Value, typename Func>
+template <typename Value, typename Func>
 auto fmap(ConsStream<Value> const& stream, Func const& f)
-  -> ConsStream<decltype(f(stream.head()))> {
+    -> ConsStream<decltype(f(stream.head()))> {
   using Mapped = decltype(f(stream.head()));
-  if (stream.isEmpty()){
+  if (stream.isEmpty()) {
     return ConsStream<Mapped>();
   }
 
   return ConsStream<Mapped>([stream, f]() {
-      return ConsCell<Mapped>(f(stream.head()), fmap(stream.tail(), f));
-    });
+    return ConsCell<Mapped>(f(stream.head()), fmap(stream.tail(), f));
+  });
 }
 
 /*
@@ -221,13 +215,12 @@ auto fmap(ConsStream<Value> const& stream, Func const& f)
   foldr f z []     =  z
   foldr f z (x:xs) =  f x (foldr f z xs)
 */
-template<typename Value, typename Result, typename Op>
-Result foldr(Op op, Result const& init, ConsStream<Value> const& stream ) {
+template <typename Value, typename Result, typename Op>
+Result foldr(Op op, Result const& init, ConsStream<Value> const& stream) {
   if (stream.isEmpty()) {
     return init;
   }
-  return op(stream.head(),
-            foldr(op, init, stream.tail()));
+  return op(stream.head(), foldr(op, init, stream.tail()));
 }
 
 /*
@@ -235,10 +228,9 @@ Result foldr(Op op, Result const& init, ConsStream<Value> const& stream ) {
   concat xss = foldr (++) [] xss
 */
 // Note - copy streams, because we're going to reassign to it
-template<typename Value>
+template <typename Value>
 ConsStream<Value> concat(ConsStream<ConsStream<Value>> streams) {
-  while (!streams.isEmpty()
-         && streams.head().isEmpty()) {
+  while (!streams.isEmpty() && streams.head().isEmpty()) {
     streams = streams.tail();
   }
 
@@ -246,16 +238,13 @@ ConsStream<Value> concat(ConsStream<ConsStream<Value>> streams) {
     return ConsStream<Value>();
   }
 
-  return foldr(append<Value>,
-               ConsStream<Value>(),
-               streams);
+  return foldr(append<Value>, ConsStream<Value>(), streams);
 }
 
 // Note - copy streams, because we're going to reassign to itx
-template<typename Value>
+template <typename Value>
 ConsStream<Value> join(ConsStream<ConsStream<Value>> streams) {
-  while (!streams.isEmpty()
-         && streams.head().isEmpty()) {
+  while (!streams.isEmpty() && streams.head().isEmpty()) {
     streams = streams.tail();
   }
 
@@ -264,23 +253,23 @@ ConsStream<Value> join(ConsStream<ConsStream<Value>> streams) {
   }
 
   return ConsStream<Value>([streams]() {
-      return ConsCell<Value>(streams.head().head(),
-                             append(streams.head().tail(),
-                                    join(streams.tail())));
-    });
+    return ConsCell<Value>(streams.head().head(),
+                           append(streams.head().tail(), join(streams.tail())));
+  });
 }
 
-template<typename Value, typename Func>
-auto bind(ConsStream<Value> const& stream, Func const& f) -> decltype(f(stream.head())) {
+template <typename Value, typename Func>
+auto bind(ConsStream<Value> const& stream, Func const& f)
+    -> decltype(f(stream.head())) {
   return join(fmap(stream, f));
 }
 
-template<typename Value, typename Func>
+template <typename Value, typename Func>
 auto then(ConsStream<Value> const& stream, Func const& f) -> decltype(f()) {
-  return join(fmap(stream, [f](Value const&){return f();}));
+  return join(fmap(stream, [f](Value const&) { return f(); }));
 }
 
-ConsStream<std::tuple<> > guard(bool b) {
+ConsStream<std::tuple<>> guard(bool b) {
   if (b) {
     return ConsStream<std::tuple<>>(std::tuple<>());
   } else {
@@ -288,7 +277,7 @@ ConsStream<std::tuple<> > guard(bool b) {
   }
 }
 
-template<typename Value>
+template <typename Value>
 ConsStream<Value> make_consstream(Value v) {
   return ConsStream<Value>(v);
 }

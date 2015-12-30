@@ -2,15 +2,15 @@
 #ifndef INCLUDED_DELAY
 #define INCLUDED_DELAY
 
-#include <functional>
 #include <experimental/optional>
+#include <functional>
 
 #include <iostream>
 
 template <typename Value>
 class Delay {
   std::function<Value()> func_;
-  mutable std::experimental::optional<Value>  value_;
+  mutable std::experimental::optional<Value> value_;
   mutable bool evaled_;
 
   using Func = std::function<Value()>;
@@ -18,12 +18,10 @@ class Delay {
   using isFuncConv = std::is_convertible<Action, Func>;
 
 public:
-  Delay(Value const& value)
-      : value_(value), evaled_(true) {
+  Delay(Value const& value) : value_(value), evaled_(true) {
   }
 
-  Delay(Value&& value)
-      : value_(std::move(value)), evaled_(true) {
+  Delay(Value&& value) : value_(std::move(value)), evaled_(true) {
   }
 
   template <typename Action,
@@ -63,8 +61,8 @@ Value const& force(Delay<Value>&& delay) {
 template <typename F, typename... Args>
 auto delay(F&& f, Args&&... args) -> Delay<decltype(f(args...))> {
   using Value = decltype(f(args...));
-  return Delay<Value>([args..., f_ = std::forward<F>(f) ]() { return f_(args...); });
+  return Delay<Value>(
+      [ args..., f_ = std::forward<F>(f) ]() { return f_(args...); });
 }
-
 
 #endif
