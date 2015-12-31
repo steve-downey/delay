@@ -4,6 +4,8 @@
 
 #include <experimental/optional>
 #include <functional>
+#include <atomic>
+#include <mutex>
 
 #include <iostream>
 
@@ -13,21 +15,38 @@ class Delay {
   template <typename Action>
   using isFuncConv = std::is_convertible<Action, Func>;
 
-  Func func_;
+  mutable Func func_;
 
   typedef typename std::aligned_storage<sizeof(Value),
                                         std::alignment_of<Value>::value>::type
       Storage;
   mutable Storage value_;
-  mutable bool evaled_;
+  mutable std::atomic_int evaled_;
+  mutable std::mutex lock_;
 
   template <typename Arg>
   void setValue(Arg&& arg) const {
-    ::new (&value_) Value(std::move(arg));
-    evaled_ = true;
+    std::unique_lock<std::mutex> guard(lock_);
+    if (!evaled_) {
+      ::new (&value_) Value(std::move(arg));
+      func_ = Func();
+      evaled_.store(1, std::memory_order_release);
+    }
   }
 
 public:
+  Delay() = default;
+  Delay(const Delay& rhs) {
+    std::unique_lock<std::mutex>  guard(rhs.lock_);
+    int evaled = evaled_.load(std::memory_order_acquire);
+    if (!evaled) {
+      func_ = rhs.func_;
+    } else {
+      ::new (&value_) Value(*reinterpret_cast<Value*>(&rhs.value_));
+    }
+    evaled_.store(evaled);
+  }
+
   Delay(Value const& value) : evaled_(true) {
     ::new (&value_) Value(value);
   }
@@ -48,7 +67,8 @@ public:
   }
 
   Value const& get() const {
-    if (!evaled_) {
+    int evaled = evaled_.load(std::memory_order_acquire);
+    if (!evaled) {
       setValue(func_());
     }
     return *reinterpret_cast<Value*>(&value_);
