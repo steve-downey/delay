@@ -163,6 +163,51 @@ ConsStream<Value> cons(Value n, ConsStream<Value> const& stream) {
 }
 
 template <typename Value>
+Value last(ConsStream<Value> const& stream) {
+  if (stream.tail().isEmpty()) {
+    return stream.head();
+  }
+  return last(stream.tail());
+}
+
+template<typename Value>
+ConsStream<Value> init(ConsStream<Value> const& stream) {
+  if (stream.tail().isEmpty()) {
+    return ConsStream<Value>();
+  }
+  return cons(stream.head(), init(stream.tail()));
+}
+
+template <typename Value>
+size_t lengthAcc(ConsStream<Value> const& stream, size_t n) {
+  if (stream.isEmpty()) {
+    return n;
+  }
+  return lengthAcc(stream.tail(), n+1);
+}
+
+template <typename Value>
+size_t length(ConsStream<Value> const& stream) {
+  return lengthAcc(stream, 0);
+}
+
+template<typename Value, typename Predicate>
+ConsStream<Value> filter(Predicate const& p, ConsStream<Value> stream) {
+  while (!stream.isEmpty() && !p(stream.head())) {
+    stream = stream.tail();
+  }
+
+  if (stream.isEmpty()) {
+    return ConsStream<Value>();
+  }
+
+  return ConsStream<Value>(
+      [p, stream]() {
+        return ConsCell<Value>(stream.head(), filter(p, stream.tail()));
+      });
+}
+
+template <typename Value>
 ConsStream<Value> rangeFrom(Value n, Value m) {
   if (n > m) {
     return ConsStream<Value>();
@@ -184,6 +229,19 @@ ConsStream<Value> take(ConsStream<Value> const& strm, int n) {
   return ConsStream<Value>([strm, n]() {
     return ConsCell<Value>(strm.head(), take(strm.tail(), n - 1));
   });
+}
+
+template <typename Value>
+ConsStream<Value> drop(ConsStream<Value> const& strm, int n) {
+  if (strm.isEmpty()) {
+    return ConsStream<Value>();
+  }
+
+  if (n == 0) {
+    return strm;
+  }
+
+  return drop(strm.tail(), n-1);
 }
 
 template <typename Value>

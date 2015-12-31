@@ -362,6 +362,29 @@ TEST_F(StreamTest, pythag) {
 
 }
 
+TEST_F(StreamTest, strictFuncs) {
+  auto from35 = rangeFrom(3,5);
+  EXPECT_EQ(5, last(from35));
+  auto init35 = init(from35);
+  EXPECT_EQ(4, last(init35));
+  EXPECT_EQ(3u, length(from35));
+  EXPECT_EQ(2u, length(init35));
+}
+
+TEST_F(StreamTest, filter) {
+  auto inf = iota(1);
+  auto even = filter([](int i) {return 0==(i%2);}, inf);
+  auto first10 = take(even, 10);
+  EXPECT_EQ(2, even.head());
+  EXPECT_EQ(20, last(first10));
+}
+
+TEST_F(StreamTest, drop) {
+  auto inf = iota(3);
+  auto drop10 = drop(inf, 10);
+  EXPECT_EQ(13, drop10.head());
+}
+
 } // end namespace
 
 namespace {
