@@ -42,7 +42,7 @@ public:
     if (!evaled) {
       func_ = rhs.func_;
     } else {
-      ::new (&value_) Value(*reinterpret_cast<Value*>(&rhs.value_));
+      ::new (&value_) Value(*reinterpret_cast<Value*>(std::addressof(rhs.value_)));
     }
     evaled_.store(evaled);
   }
@@ -71,7 +71,7 @@ public:
     if (!evaled) {
       setValue(func_());
     }
-    return *reinterpret_cast<Value*>(&value_);
+    return *reinterpret_cast<Value*>(std::addressof(this->value_));
   }
 
   operator Value const&() const {
