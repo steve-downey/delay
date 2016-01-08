@@ -54,3 +54,9 @@ add_subdirectory(tests)
 
 add_executable(delay delay.c++)
 target_link_libraries(delay lazystream)
+
+add_executable(bench1 bench1.c++)
+target_link_libraries(bench1 lazystream)
+
+add_executable(bench2 bench2.c++)
+target_link_libraries(bench2 lazystream)
