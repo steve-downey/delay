@@ -327,6 +327,47 @@ auto then(ConsStream<Value> const& stream, Func const& f) -> decltype(f()) {
   return join(fmap(stream, [f](Value const&) { return f(); }));
 }
 
+// Note - copy streams, because we're going to reassign to itx
+template <typename Value, typename Func>
+auto bind2(ConsStream<Value> stream, Func const& f)
+  -> decltype(f(stream.head())) {
+  using Mapped = decltype(f(stream.head()));
+
+  if (stream.isEmpty()) {
+    return Mapped();
+  }
+
+  ConsStream<Value> s = stream;
+  Mapped y = f(s.head());
+  while (!s.isEmpty() && y.isEmpty()) {
+    s = s.tail();
+    if (!s.isEmpty()) {
+      y = f(s.head());
+    }
+  }
+
+  if (s.isEmpty()) {
+    return Mapped();
+  }
+
+  return Mapped([y, s, f]() {
+      using T=decltype(y.head());
+      return ConsCell<T>(y.head(),
+                         append(y.tail(),
+                                bind2(s.tail(), f)));
+    });
+
+}
+
+template <typename Value, typename Func>
+auto then2(ConsStream<Value> const& stream, Func const& f) -> decltype(f()) {
+  return bind2(stream, [f](Value const&) { return f(); });
+}
+template <typename Value>
+ConsStream<Value> join2(ConsStream<ConsStream<Value>> streams) {
+  return bind2(streams, [](auto v){return v;});
+}
+
 ConsStream<std::tuple<>> guard(bool b) {
   if (b) {
     return ConsStream<std::tuple<>>(std::tuple<>());

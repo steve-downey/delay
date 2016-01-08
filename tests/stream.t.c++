@@ -305,6 +305,28 @@ TEST_F(StreamTest, bindStreamList) {
 
 }
 
+TEST_F(StreamTest, bind2StreamList) {
+  ConsStream<int> inf = iota(0);
+  ConsStream<int> s3 = bind2(inf,
+                             [](int i){return rangeFrom(0, i);});
+
+  EXPECT_EQ(0, s3.head());
+
+  ConsStream<int> c = take(s3, 6);
+
+  std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
+  int k = 0;
+  for(auto const& a : c) {
+    EXPECT_EQ(v[k], a);
+    ++k;
+  }
+  EXPECT_EQ(6, k);
+
+  EXPECT_EQ(4, inf.countForced());
+  EXPECT_EQ(6, s3.countForced());
+
+}
+
 TEST_F(StreamTest, thenStreamList) {
   ConsStream<int> inf = iota(0);
   ConsStream<int> s3 = then(inf,
@@ -327,6 +349,68 @@ TEST_F(StreamTest, thenStreamList) {
 
 }
 
+TEST_F(StreamTest, then2StreamList) {
+  ConsStream<int> inf = iota(0);
+  ConsStream<int> s3 = then2(inf,
+                            [](){return rangeFrom(0, 2);});
+
+  EXPECT_EQ(0, s3.head());
+
+  ConsStream<int> c = take(s3, 6);
+
+  std::vector<int> v{0,1,2,0,1,2,0,1,2,0};
+  int k = 0;
+  for(auto const& a : c) {
+    EXPECT_EQ(v[k], a);
+    ++k;
+  }
+  EXPECT_EQ(6, k);
+
+  EXPECT_EQ(3, inf.countForced());
+  EXPECT_EQ(6, s3.countForced());
+
+}
+
+TEST_F(StreamTest, join2StreamList) {
+  ConsStream<int> inf = iota(0);
+  ConsStream<ConsStream<int>> s2 = fmap(inf, [](int i){return rangeFrom(0, i);});
+  ConsStream<int> s3 = join2(s2);
+
+  ConsStream<int> c = take(s3, 6);
+
+  std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
+  int k = 0;
+  for(auto const& a : c) {
+    EXPECT_EQ(v[k], a);
+    ++k;
+  }
+  EXPECT_EQ(6, k);
+
+  EXPECT_EQ(4, inf.countForced());
+  EXPECT_EQ(4, s2.countForced());
+  EXPECT_EQ(6, s3.countForced());
+
+}
+
+TEST_F(StreamTest, join2StreamList2) {
+  ConsStream<int> inf = iota(0);
+  ConsStream<int> s3 = join2(fmap(inf, [](int i){return rangeFrom(0, i);}));
+
+  ConsStream<int> c = take(s3, 6);
+
+  std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
+  int k = 0;
+  for(auto const& a : c) {
+    EXPECT_EQ(v[k], a);
+    ++k;
+  }
+  EXPECT_EQ(6, k);
+
+  EXPECT_EQ(4, inf.countForced());
+  EXPECT_EQ(6, s3.countForced());
+
+}
+
 TEST_F(StreamTest, guard) {
   EXPECT_FALSE(guard(true).isEmpty());
   EXPECT_TRUE(guard(false).isEmpty());
@@ -338,6 +422,18 @@ ConsStream<std::tuple<int, int, int>> triples() {
       return bind(rangeFrom(1, z), [z](int x) {
           return bind(rangeFrom(x, z), [x, z](int y) {
               return then(guard(x*x + y*y == z*z), [x, y, z]() {
+                  return make_consstream(std::make_tuple(x, y, z));
+                });
+            });
+        });
+    });
+}
+
+ConsStream<std::tuple<int, int, int>> triples2() {
+  return bind2(iota(1), [](int z) {
+      return bind2(rangeFrom(1, z), [z](int x) {
+          return bind2(rangeFrom(x, z), [x, z](int y) {
+              return then2(guard(x*x + y*y == z*z), [x, y, z]() {
                   return make_consstream(std::make_tuple(x, y, z));
                 });
             });
@@ -361,6 +457,24 @@ TEST_F(StreamTest, pythag) {
   EXPECT_EQ(10, trip.countForced());
 
 }
+
+TEST_F(StreamTest, pythag2) {
+  auto trip = triples2();
+  EXPECT_EQ(std::make_tuple(3,4,5), trip.head());
+
+  EXPECT_EQ(1, trip.countForced());
+
+  auto tenTrips = take(trip, 10);
+
+  std::tuple<int,int,int> tenth;
+  for(auto const& a : tenTrips) {
+    tenth = a;
+  }
+  EXPECT_EQ(std::make_tuple(20,21,29), tenth);
+  EXPECT_EQ(10, trip.countForced());
+
+}
+
 
 TEST_F(StreamTest, strictFuncs) {
   auto from35 = rangeFrom(3,5);
