@@ -331,14 +331,14 @@ auto then(ConsStream<Value> const& stream, Func const& f) -> decltype(f()) {
 template <typename Value, typename Func>
 auto bind2(ConsStream<Value> stream, Func const& f)
   -> decltype(f(stream.head())) {
-  using Mapped = decltype(f(stream.head()));
+  using M = decltype(bind2(stream, f));
 
   if (stream.isEmpty()) {
-    return Mapped();
+    return M();
   }
 
   ConsStream<Value> s = stream;
-  Mapped y = f(s.head());
+  auto y = f(s.head());
   while (!s.isEmpty() && y.isEmpty()) {
     s = s.tail();
     if (!s.isEmpty()) {
@@ -347,10 +347,10 @@ auto bind2(ConsStream<Value> stream, Func const& f)
   }
 
   if (s.isEmpty()) {
-    return Mapped();
+    return M();
   }
 
-  return Mapped([y, s, f]() {
+  return M([y, s, f]() {
       using T=decltype(y.head());
       return ConsCell<T>(y.head(),
                          append(y.tail(),
