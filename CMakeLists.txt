@@ -39,7 +39,12 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 
-add_subdirectory(googletest)
+# A directory to find Google Test sources.
+if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/googletest/CMakeLists.txt")
+  add_subdirectory(googletest)
+else()
+  message("GTEST Not Found at ${CMAKE_CURRENT_SOURCE_DIR}/googletest/CMakeLists.txt")
+endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(include)
@@ -47,8 +52,12 @@ include_directories(./)
 include_directories(lib)
 
 add_subdirectory(lib)
-add_subdirectory(tests)
-
+# A directory to find Google Test sources.
+if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/googletest/CMakeLists.txt")
+  add_subdirectory(tests)
+else()
+  message("Tests not being built")
+endif()
 
 
 
