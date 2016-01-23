@@ -18,7 +18,7 @@ ConsStream<std::tuple<int, int, int>> triples() {
 
 int main(int argc, char **argv)
 {
-    auto lastOne = last(take(triples(), 300));
+    auto lastOne = last(take(triples(), 1000));
     int x, y, z;
     std::tie(x,y,z) = lastOne;
     std::cout << x << ',' << y << ',' << z << '\n';
