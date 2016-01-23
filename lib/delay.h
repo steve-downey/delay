@@ -38,7 +38,7 @@ public:
   Delay() = default;
   Delay(const Delay& rhs) {
     std::unique_lock<std::mutex>  guard(rhs.lock_);
-    int evaled = evaled_.load(std::memory_order_acquire);
+    int evaled = rhs.evaled_.load(std::memory_order_acquire);
     if (!evaled) {
       func_ = rhs.func_;
     } else {
