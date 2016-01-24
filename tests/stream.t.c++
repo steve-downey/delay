@@ -141,7 +141,7 @@ TEST_F(StreamTest, takeInfStream) {
   }
 }
 
-TEST_F(StreamTest, concatStream) {
+TEST_F(StreamTest, appendStream) {
   ConsStream<int> inf = iota(0);
   ConsStream<int> s1 = take(inf, 3);
   ConsStream<int> s2 = take(iota(1), 3);
@@ -240,7 +240,25 @@ TEST_F(StreamTest, concatStreamList2) {
   EXPECT_EQ(3, s2.countForced());
   EXPECT_EQ(3, s3.countForced());
   EXPECT_EQ(6, c.countForced());
+}
 
+TEST_F(StreamTest, concatInfStreamList) {
+  ConsStream<int> inf = iota(0);
+  ConsStream<ConsStream<int>> s2 = fmap(inf, [](int i){return rangeFrom(0, i);});
+
+  ConsStream<int> c = concat(s2);
+
+  std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
+  int k = 0;
+  for(auto const& a : take(c, 10)) {
+    EXPECT_EQ(v[k], a);
+    ++k;
+  }
+  EXPECT_EQ(10, k);
+
+  EXPECT_EQ(5, inf.countForced());
+  EXPECT_EQ(5, s2.countForced());
+  EXPECT_EQ(10, c.countForced());
 }
 
 TEST_F(StreamTest, joinStreamList) {

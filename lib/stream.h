@@ -255,6 +255,17 @@ ConsStream<Value> append(ConsStream<Value> const& first,
   });
 }
 
+template <typename Value>
+ConsStream<Value> append(ConsStream<Value> const& first,
+                         Delay<ConsStream<Value>> const& second) {
+  if (first.isEmpty()) {
+    return force(second);
+  }
+  return ConsStream<Value>([first, second]() {
+      return ConsCell<Value>(first.head(), append(first.tail(), second));
+    });
+}
+
 template <typename Value, typename Func>
 auto fmap(ConsStream<Value> const& stream, Func const& f)
     -> ConsStream<decltype(f(stream.head()))> {
@@ -278,7 +289,10 @@ Result foldr(Op op, Result const& init, ConsStream<Value> const& stream) {
   if (stream.isEmpty()) {
     return init;
   }
-  return op(stream.head(), foldr(op, init, stream.tail()));
+  return op(stream.head(), delay(foldr<Value, Result, Op>,
+                                 op,
+                                 init,
+                                 stream.tail()));
 }
 
 /*
@@ -296,10 +310,14 @@ ConsStream<Value> concat(ConsStream<ConsStream<Value>> streams) {
     return ConsStream<Value>();
   }
 
-  return foldr(append<Value>, ConsStream<Value>(), streams);
+  return foldr(
+      static_cast<ConsStream<Value> (&)(
+          ConsStream<Value> const&, Delay<ConsStream<Value>> const&)>(append),
+      ConsStream<Value>(),
+      streams);
 }
 
-// Note - copy streams, because we're going to reassign to itx
+// Note - copy streams, because we're going to reassign to it
 template <typename Value>
 ConsStream<Value> join(ConsStream<ConsStream<Value>> streams) {
   while (!streams.isEmpty() && streams.head().isEmpty()) {
