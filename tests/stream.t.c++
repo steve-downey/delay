@@ -26,7 +26,7 @@ TEST_F(StreamTest, breathingTest) {
     ConsCell<int> cc2(1);
 
     ConsStream<int> cs1;
-    ConsStream<int> cs2 = make_stream(1);
+    ConsStream<int> cs2 = make<ConsStream>(1);
     ConsStream<int> cs3(1);
 
     EXPECT_TRUE(cs1.isEmpty());
@@ -440,7 +440,7 @@ ConsStream<std::tuple<int, int, int>> triples() {
       return bind(rangeFrom(1, z), [z](int x) {
           return bind(rangeFrom(x, z), [x, z](int y) {
               return then(guard(x*x + y*y == z*z), [x, y, z]() {
-                  return make_consstream(std::make_tuple(x, y, z));
+                  return make<ConsStream>(std::make_tuple(x, y, z));
                 });
             });
         });
@@ -452,7 +452,7 @@ ConsStream<std::tuple<int, int, int>> triples2() {
       return bind2(rangeFrom(1, z), [z](int x) {
           return bind2(rangeFrom(x, z), [x, z](int y) {
               return then2(guard(x*x + y*y == z*z), [x, y, z]() {
-                  return make_consstream(std::make_tuple(x, y, z));
+                  return make<ConsStream>(std::make_tuple(x, y, z));
                 });
             });
         });
@@ -539,4 +539,3 @@ public:
 template class ConsStreamIterator<int>;
 template class ConsStream<std::string>;
 template class ConsStream<NoDefault>;
-template class ConsStream<NoMove>;

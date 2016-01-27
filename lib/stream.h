@@ -47,9 +47,14 @@ class ConsStream {
 public:
   ConsStream() = default;
 
-  ConsStream(Value value)
+  ConsStream(Value const& value)
       : delayed_cell_(std::make_shared<Delay<ConsCell<Value>>>(
             [value]() { return ConsCell<Value>(value); })) {
+  }
+
+  ConsStream(Value && value)
+      : delayed_cell_(std::make_shared<Delay<ConsCell<Value>>>(
+                          [v = std::move(value)]() { return ConsCell<Value>(v); })) {
   }
 
   template <typename Func,
@@ -99,6 +104,37 @@ public:
 template <typename Value>
 ConsStream<Value> make_stream(Value v) {
   return ConsStream<Value>([v]() { return ConsCell<Value>(v); });
+}
+
+
+template <template<typename> typename Applicative, typename Value>
+struct Make {
+  Applicative<Value> operator()(Value const& v);
+  Applicative<Value> operator()(Value && v);
+};
+
+template<typename Value>
+struct Make<ConsStream, Value> {
+  ConsStream<Value> operator()(Value const& v) {
+    // return ConsStream<Value>([v]() { return ConsCell<Value>(v); });
+    return ConsStream<Value>(v);
+  }
+  ConsStream<Value> operator()(Value && v) {
+    // return ConsStream<Value>([v]() { return ConsCell<Value>(v); });
+    return ConsStream<Value>(v);
+  }
+};
+
+template <template<typename> typename Applicative, typename Value>
+Applicative<Value> make(Value const& v){
+  Make<Applicative, Value> m;
+  return m(v);
+}
+
+template <template<typename> typename Applicative, typename Value>
+Applicative<Value> make(Value && v){
+  Make<Applicative, Value> m;
+  return m(v);
 }
 
 template <typename Value>
@@ -381,6 +417,7 @@ template <typename Value, typename Func>
 auto then2(ConsStream<Value> const& stream, Func const& f) -> decltype(f()) {
   return bind2(stream, [f](Value const&) { return f(); });
 }
+
 template <typename Value>
 ConsStream<Value> join2(ConsStream<ConsStream<Value>> streams) {
   return bind2(streams, [](auto v){return v;});
@@ -394,9 +431,9 @@ ConsStream<std::tuple<>> guard(bool b) {
   }
 }
 
-template <typename Value>
-ConsStream<Value> make_consstream(Value v) {
-  return ConsStream<Value>(v);
-}
+// template <typename Value>
+// ConsStream<Value> make_consstream(Value v) {
+//   return ConsStream<Value>(v);
+// }
 
 #endif
