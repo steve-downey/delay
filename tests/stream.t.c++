@@ -517,6 +517,65 @@ TEST_F(StreamTest, drop) {
   EXPECT_EQ(13, drop10.head());
 }
 
+
+class MoveableFuncional {
+  int j_;
+public:
+  MoveableFuncional(int j)
+      : j_(j){}
+
+  MoveableFuncional(MoveableFuncional const& f) = delete;
+
+  MoveableFuncional(MoveableFuncional&& f)
+      : j_(std::move(f.j_)) {}
+
+  int operator()(int i) const {
+    return i + j_;
+  }
+};
+
+TEST_F(StreamTest, dot) {
+  auto f = [](int i) {return i+1;};
+  auto g = [](int j) {return 2*j;};
+  auto comp = dot(f,g);
+  auto comp2 = dot(g,f);
+
+  EXPECT_EQ(5, comp(2));
+  EXPECT_EQ(8, comp2(3));
+
+  auto itos = [](int i) {std::ostringstream s; s << i; return s.str(); };
+  auto comp3 = dot(itos, f);
+  EXPECT_EQ("6", comp3(5));
+
+  auto two = [](int i, int j) {return i + 2*j;};
+  auto comp4 = dot(g, two);
+
+  EXPECT_EQ(10, comp4(1,2));
+
+  MoveableFuncional m(3);
+
+  auto comp5 = dot(g, std::move(m));
+  EXPECT_EQ(12, comp5(3));
+}
+
+TEST_F(StreamTest, concatMapTest) {
+  auto list = [](int i){return rangeFrom(0, i);};
+
+  ConsStream<int> mapped = concatMap(list, iota(0));
+
+  ConsStream<int> c = take(mapped, 6);
+
+  std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
+  int k = 0;
+  for(auto const& a : c) {
+    EXPECT_EQ(v[k], a);
+    ++k;
+  }
+  EXPECT_EQ(6, k);
+
+  EXPECT_EQ(6, mapped.countForced());
+}
+
 } // end namespace
 
 namespace {

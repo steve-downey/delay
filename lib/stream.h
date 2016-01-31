@@ -45,6 +45,8 @@ class ConsStream {
   friend class ConsStreamIterator<Value>;
 
 public:
+  typedef Value value;
+
   ConsStream() = default;
 
   ConsStream(Value const& value)
@@ -431,6 +433,31 @@ ConsStream<std::tuple<>> guard(bool b) {
   }
 }
 
+// dot: :: (b -> c) -> (a -> b) -> (a -> c)
+template<typename FuncF, typename FuncG>
+auto dot(FuncF&& f, FuncG&& g) {
+  return [f = std::forward<FuncF>(f),
+          g = std::forward<FuncG>(g)] (auto&&... xs) {
+    return f(g(std::forward<decltype(xs)>(xs)...));
+  };
+}
+
+//-- | Map a function over a list and concatenate the results.
+//concatMap               :: (a -> [b]) -> [a] -> [b]
+//concatMap f             =  foldr ((++) . f) []
+
+template <typename Func, typename Value>
+auto concatMap(Func&& f,  ConsStream<Value> const& stream) {
+  //  -> ConsStream<decltype(f(stream.head())::value)> {
+  auto appendMap = [f = std::forward<Func>(f)]
+    (Value v, Delay<ConsStream<Value>> const& delayStream) {
+    return append(f(v), delayStream);
+  };
+  return foldr(
+      appendMap,
+      ConsStream<Value>(),
+      stream);
+}
 // template <typename Value>
 // ConsStream<Value> make_consstream(Value v) {
 //   return ConsStream<Value>(v);
