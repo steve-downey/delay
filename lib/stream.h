@@ -422,7 +422,7 @@ auto then2(ConsStream<Value> const& stream, Func const& f) -> decltype(f()) {
 
 template <typename Value>
 ConsStream<Value> join2(ConsStream<ConsStream<Value>> streams) {
-  return bind2(streams, [](auto v){return v;});
+  return bind2(streams, [](auto&& v){return std::forward<decltype(v)>(v);});
 }
 
 ConsStream<std::tuple<>> guard(bool b) {
