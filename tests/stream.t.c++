@@ -13,10 +13,16 @@ public:
   Int() : i_(0){};
   explicit  Int(int i) : i_(i){};
   explicit operator int(){return i_;}
+
+  Int operator+(int j) const {return Int(i_ + j);}
 };
 
 bool operator==(Int lhs, Int rhs){
   return static_cast<int>(lhs) == static_cast<int>(rhs);
+}
+
+bool operator>(Int lhs, Int rhs){
+  return static_cast<int>(lhs) > static_cast<int>(rhs);
 }
 
 class Double
@@ -307,6 +313,25 @@ TEST_F(StreamTest, concatInfStreamList) {
   int k = 0;
   for(auto const& a : take(c, 10)) {
     EXPECT_EQ(v[k], a);
+    ++k;
+  }
+  EXPECT_EQ(10, k);
+
+  EXPECT_EQ(5, inf.countForced());
+  EXPECT_EQ(5, s2.countForced());
+  EXPECT_EQ(10, c.countForced());
+}
+
+TEST_F(StreamTest, concatInfStreamList2) {
+  ConsStream<Int> inf = iota(Int(0));
+  ConsStream<ConsStream<Int>> s2 = fmap(inf, [](Int i){return rangeFrom(Int(0), i);});
+
+  ConsStream<Int> c = concat(s2);
+
+  std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
+  int k = 0;
+  for(auto const& a : take(c, 10)) {
+    EXPECT_EQ(Int(v[k]), a);
     ++k;
   }
   EXPECT_EQ(10, k);
