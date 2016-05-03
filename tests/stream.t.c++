@@ -4,7 +4,36 @@
 using ::testing::Test;
 
 namespace testing {
-namespace {}
+namespace {
+
+class Int
+{
+  int i_;
+public:
+  Int() : i_(0){};
+  explicit  Int(int i) : i_(i){};
+  explicit operator int(){return i_;}
+};
+
+bool operator==(Int lhs, Int rhs){
+  return static_cast<int>(lhs) == static_cast<int>(rhs);
+}
+
+class Double
+{
+  double d_;
+public:
+  Double() : d_(0){};
+  explicit Double(double d) : d_(d){};
+  explicit operator double(){return d_;}
+};
+
+bool operator==(Double lhs, Double rhs){
+  return static_cast<double>(lhs) == static_cast<double>(rhs);
+};
+
+
+}
 
 class StreamTest : public Test {
 protected:
@@ -176,6 +205,32 @@ TEST_F(StreamTest, fmapStream) {
   int k2 = 0;
   for(auto const& a : front2) {
     EXPECT_EQ(v2[k2], a);
+    ++k2;
+  }
+  EXPECT_EQ(5, k2);
+}
+
+TEST_F(StreamTest, fmapStream2) {
+  ConsStream<int> inf = iota(0);
+
+  ConsStream<Int> square = fmap(inf, [](int i){return Int(i*i);});
+  ConsStream<Int> front = take(square, 5);
+
+  std::vector<int> v{0,1,4,9,16,25};
+  int k = 0;
+  for(auto const& a : front) {
+    EXPECT_EQ(Int(v[k]), a);
+    ++k;
+  }
+  EXPECT_EQ(5, k);
+
+  ConsStream<Double> square2 = fmap(inf, [](int i) -> Double {return Double(i*i);});
+  ConsStream<Double> front2 = take(square2, 5);
+
+  std::vector<int> v2{0,1,4,9,16,25};
+  int k2 = 0;
+  for(auto const& a : front2) {
+    EXPECT_EQ(Double(v2[k2]), a);
     ++k2;
   }
   EXPECT_EQ(5, k2);
