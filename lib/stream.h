@@ -56,7 +56,7 @@ public:
 
   ConsStream(Value && value)
       : delayed_cell_(std::make_shared<Delay<ConsCell<Value>>>(
-                          [v = std::move(value)]() { return ConsCell<Value>(v); })) {
+                          [v = std::forward<Value>(value)]() { return ConsCell<Value>(v); })) {
   }
 
   template <typename Func,
@@ -117,24 +117,25 @@ struct Make {
 
 template<typename Value>
 struct Make<ConsStream, Value> {
-  ConsStream<Value> operator()(Value const& v) {
+  typedef typename std::decay<Value>::type V;
+  ConsStream<V> operator()(Value const& v) {
     // return ConsStream<Value>([v]() { return ConsCell<Value>(v); });
-    return ConsStream<Value>(v);
+    return ConsStream<V>(v);
   }
-  ConsStream<Value> operator()(Value && v) {
+  ConsStream<V> operator()(V && v) {
     // return ConsStream<Value>([v]() { return ConsCell<Value>(v); });
-    return ConsStream<Value>(v);
+    return ConsStream<V>(v);
   }
 };
 
 template <template<typename> typename Applicative, typename Value>
-Applicative<Value> make(Value const& v){
+Applicative<typename std::decay<Value>::type> make(Value const& v){
   Make<Applicative, Value> m;
   return m(v);
 }
 
 template <template<typename> typename Applicative, typename Value>
-Applicative<Value> make(Value && v){
+Applicative<typename std::decay<Value>::type> make(Value && v){
   Make<Applicative, Value> m;
   return m(v);
 }
@@ -463,4 +464,37 @@ auto concatMap(Func&& f,  ConsStream<Value> const& stream) {
 //   return ConsStream<Value>(v);
 // }
 
+// Applicative:
+// app :: f (a -> b) -> f a -> f b
+// fs <*> xs = [f x | f <- fs, x <- xs]
+// == concatMap (\f -> concatMap (\x -> [f x]) xs) fs
+// == fs >>= (\f ->  xs >>= \x -> return (f x))
+
+template <typename Value, typename Func>
+auto appX(ConsStream<Func> const& funcs, ConsStream<Value> const& values)
+//  -> decltype(funcs.head()(values.head())) {
+{
+  return concatMap(
+      [values](Func const& f){
+        return concatMap(
+            [f](Value v){
+              return make<ConsStream>(f(v));
+            },
+            values);
+      },
+      funcs);
+  //  return funcs.head()(values.head());
+}
+template <typename Value, typename Func>
+auto app(ConsStream<Func> const& funcs, ConsStream<Value> const& values)
+//  -> decltype(funcs.head()(values.head())) {
+{
+  return bind2(funcs,
+               [values](Func const& f){
+                 return bind2(values,
+                              [f](Value const& v){
+                                return make<ConsStream>(f(v));
+                              });
+               });
+}
 #endif

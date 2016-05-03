@@ -576,6 +576,20 @@ TEST_F(StreamTest, concatMapTest) {
   EXPECT_EQ(6, mapped.countForced());
 }
 
+TEST_F(StreamTest, appTest) {
+  ConsStream<int> inf = iota(0);
+  ConsStream<int> s1 = take(inf, 3);
+
+  auto add1Lambda = [](int i) {return i+1;};
+  std::function<int(int)> add1 = add1Lambda;
+  auto streamFunc = make<ConsStream>(add1);
+
+  auto result = app(streamFunc,s1);
+
+  EXPECT_EQ(1, result.head());
+
+}
+
 } // end namespace
 
 namespace {
