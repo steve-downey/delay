@@ -403,6 +403,28 @@ TEST_F(StreamTest, bindStreamList) {
 
 }
 
+TEST_F(StreamTest, bindStreamList2) {
+  ConsStream<int> inf = iota(0);
+  ConsStream<Int> s3 = bind(inf,
+                            [](int i){return rangeFrom(Int(0), Int(i));});
+
+  EXPECT_EQ(Int(), s3.head());
+
+  ConsStream<Int> c = take(s3, 6);
+
+  std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
+  int k = 0;
+  for(auto const& a : c) {
+    EXPECT_EQ(Int(v[k]), a);
+    ++k;
+  }
+  EXPECT_EQ(6, k);
+
+  EXPECT_EQ(4, inf.countForced());
+  EXPECT_EQ(6, s3.countForced());
+
+}
+
 TEST_F(StreamTest, bind2StreamList) {
   ConsStream<int> inf = iota(0);
   ConsStream<int> s3 = bind2(inf,
