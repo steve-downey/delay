@@ -700,6 +700,37 @@ TEST_F(StreamTest, concatMapTest) {
   EXPECT_EQ(6, mapped.countForced());
 }
 
+TEST_F(StreamTest, foldrTest) {
+  auto inf = iota(1);
+  auto even = filter([](int i) {return 0==(i%2);}, inf);
+  auto first5 = take(even, 5);
+
+  auto func = [](int i, int j){return i+j;};
+
+  auto c = foldr(func, 0, first5);
+  EXPECT_EQ(30, c);
+
+  EXPECT_EQ(5, first5.countForced());
+}
+
+// TEST_F(StreamTest, concatMapTest2) {
+//   std::function<ConsStream<Int>(int)> list = [](int i){return rangeFrom(Int(0), Int(i));};
+
+//   ConsStream<Int> mapped = concatMap(list, iota(0));
+
+//   ConsStream<Int> c = take(mapped, 6);
+
+//   std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
+//   int k = 0;
+//   for(auto const& a : c) {
+//     EXPECT_EQ(Int(v[k]), a);
+//     ++k;
+//   }
+//   EXPECT_EQ(6, k);
+
+//   EXPECT_EQ(6, mapped.countForced());
+// }
+
 TEST_F(StreamTest, appTest) {
   ConsStream<int> inf = iota(0);
   ConsStream<int> s1 = take(inf, 3);
