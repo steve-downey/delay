@@ -25,6 +25,11 @@ bool operator>(Int lhs, Int rhs){
   return static_cast<int>(lhs) > static_cast<int>(rhs);
 }
 
+Int operator+(Int lhs, Int rhs){
+  return Int(static_cast<int>(lhs) + static_cast<int>(rhs));
+}
+
+
 class Double
 {
   double d_;
@@ -713,6 +718,19 @@ TEST_F(StreamTest, foldrTest) {
   EXPECT_EQ(5, first5.countForced());
 }
 
+TEST_F(StreamTest, foldrTest2) {
+  auto inf = iota(1);
+  auto even = filter([](int i) {return 0==(i%2);}, inf);
+  auto first5 = take(even, 5);
+
+  auto func = [](int i, Int j){return Int(i)+j;};
+
+  auto c = foldr(func, Int(0), first5);
+  EXPECT_EQ(Int(30), c);
+
+  EXPECT_EQ(5, first5.countForced());
+}
+
 // TEST_F(StreamTest, concatMapTest2) {
 //   std::function<ConsStream<Int>(int)> list = [](int i){return rangeFrom(Int(0), Int(i));};
 
@@ -744,6 +762,7 @@ TEST_F(StreamTest, appTest) {
   EXPECT_EQ(1, result.head());
 
 }
+
 
 } // end namespace
 
