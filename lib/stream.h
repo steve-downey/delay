@@ -463,16 +463,16 @@ auto concatMap(Func&& f,  ConsStream<Value> const& stream) {
 template <typename Func, typename Value>
 auto concatMap2(Func&& f,  ConsStream<Value> const& stream) {
   //  -> ConsStream<decltype(f(stream.head())::value)> {
-  using ResultOf = typename std::result_of<Func(Value)>::type;
-  using ResultOfStream = ConsStream<ResultOf>;
-  auto appendMap = [f_ = std::forward<Func>(f)]
-    (Value v, Delay<ResultOfStream> delayStream)
-    -> ResultOfStream{
-    return append(f_(v), delayStream);
+  using ResultOf = std::result_of_t<Func(Value)>;
+
+  auto appendF = [f_ = std::forward<Func>(f)]
+    (Value v, Delay<ResultOf> const& s) {
+    return append(f_(v), s);
   };
+
   return foldr(
-      appendMap,
-      ResultOfStream(),
+      appendF,
+      ResultOf(),
       stream);
 }
 
