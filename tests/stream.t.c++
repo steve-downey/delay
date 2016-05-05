@@ -705,10 +705,10 @@ TEST_F(StreamTest, concatMapTest) {
   EXPECT_EQ(6, mapped.countForced());
 }
 
-TEST_F(StreamTest, concatMap2Test) {
+TEST_F(StreamTest, concatMapTest2) {
   auto list = [](int i){return rangeFrom(0, i);};
 
-  ConsStream<int> mapped = concatMap2(list, iota(0));
+  ConsStream<int> mapped = concatMap(list, iota(0));
 
   ConsStream<int> c = take(mapped, 6);
 
