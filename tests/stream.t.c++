@@ -749,23 +749,6 @@ TEST_F(StreamTest, foldrTest2) {
   EXPECT_EQ(5, first5.countForced());
 }
 
-// TEST_F(StreamTest, concatMapTest2) {
-//   std::function<ConsStream<Int>(int)> list = [](int i){return rangeFrom(Int(0), Int(i));};
-
-//   ConsStream<Int> mapped = concatMap(list, iota(0));
-
-//   ConsStream<Int> c = take(mapped, 6);
-
-//   std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
-//   int k = 0;
-//   for(auto const& a : c) {
-//     EXPECT_EQ(Int(v[k]), a);
-//     ++k;
-//   }
-//   EXPECT_EQ(6, k);
-
-//   EXPECT_EQ(6, mapped.countForced());
-// }
 
 TEST_F(StreamTest, appTest) {
   ConsStream<int> inf = iota(0);
@@ -776,6 +759,20 @@ TEST_F(StreamTest, appTest) {
   auto streamFunc = make<ConsStream>(add1);
 
   auto result = app(streamFunc,s1);
+
+  EXPECT_EQ(1, result.head());
+
+}
+
+TEST_F(StreamTest, app2Test) {
+  ConsStream<int> inf = iota(0);
+  ConsStream<int> s1 = take(inf, 3);
+
+  auto add1Lambda = [](int i) {return i+1;};
+  std::function<int(int)> add1 = add1Lambda;
+  auto streamFunc = make<ConsStream>(add1);
+
+  auto result = app2(streamFunc,s1);
 
   EXPECT_EQ(1, result.head());
 

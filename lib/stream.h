@@ -476,7 +476,7 @@ auto concatMap(Func&& f,  ConsStream<Value> const& stream) {
 // == fs >>= (\f ->  xs >>= \x -> return (f x))
 
 template <typename Value, typename Func>
-auto appX(ConsStream<Func> const& funcs, ConsStream<Value> const& values)
+auto app2(ConsStream<Func> const& funcs, ConsStream<Value> const& values)
 //  -> decltype(funcs.head()(values.head())) {
 {
   return concatMap(
