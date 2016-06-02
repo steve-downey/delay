@@ -690,7 +690,7 @@ TEST_F(StreamTest, dot) {
 TEST_F(StreamTest, concatMapTest) {
   auto list = [](int i){return rangeFrom(0, i);};
 
-  ConsStream<int> mapped = concatMap(list, iota(0));
+  ConsStream<int> mapped = concatMap(list, rangeFrom(0, 4));
 
   ConsStream<int> c = take(mapped, 6);
 
