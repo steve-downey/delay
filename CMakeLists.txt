@@ -46,6 +46,13 @@ else()
   message("GTEST Not Found at ${CMAKE_CURRENT_SOURCE_DIR}/googletest/CMakeLists.txt")
 endif()
 
+# A directory to find Google Benchmark sources.
+if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/benchmark/CMakeLists.txt")
+  add_subdirectory(benchmark)
+else()
+  message("Google Benchmark Not Found at ${CMAKE_CURRENT_SOURCE_DIR}/benchmark/CMakeLists.txt")
+endif()
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(include)
 include_directories(./)
@@ -57,6 +64,13 @@ if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/googletest/CMakeLists.txt")
   add_subdirectory(tests)
 else()
   message("Tests not being built")
+endif()
+
+# A directory to find Google Benchmark sources.
+if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/benchmark/CMakeLists.txt")
+  add_subdirectory(benchmarks)
+else()
+  message("Micro benchmarks not being built")
 endif()
 
 
