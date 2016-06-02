@@ -203,10 +203,11 @@ ConsStream<Value> cons(Value n, ConsStream<Value> const& stream) {
 
 template <typename Value>
 Value last(ConsStream<Value> const& stream) {
-  if (stream.tail().isEmpty()) {
-    return stream.head();
+  ConsStream<Value> s = stream;
+  while (!s.tail().isEmpty()) {
+    s = s.tail();
   }
-  return last(stream.tail());
+  return s.head();
 }
 
 template<typename Value>
