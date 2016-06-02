@@ -12,7 +12,7 @@ int Factorial(uint32_t n) {
 
 static void BM_Concat(benchmark::State& state) {
   auto x = state.range_x();
-  int l;
+  int l = 0;
   while (state.KeepRunning()){
     ConsStream<int> inf = iota(0);
     ConsStream<int> s1 = take(inf, x);
@@ -139,7 +139,9 @@ ConsStream<std::tuple<int, int, int>> triples() {
 }
 
 static void BM_Triple1(benchmark::State& state){
-  int x,y,z;
+  int x = 0;
+  int y = 0;
+  int z = 0;
   while (state.KeepRunning())
     std::tie(x,y,z) = last(take(triples(), 10));
 
@@ -164,7 +166,9 @@ ConsStream<std::tuple<int, int, int>> triples2() {
 }
 
 static void BM_Triple2(benchmark::State& state){
-  int x,y,z;
+  int x = 0;
+  int y = 0;
+  int z = 0;
   while (state.KeepRunning())
     std::tie(x,y,z) = last(take(triples2(), 10));
 
