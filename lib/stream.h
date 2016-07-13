@@ -427,11 +427,13 @@ ConsStream<Value> join2(ConsStream<ConsStream<Value>> streams) {
   return bind2(streams, [](auto&& v){return std::forward<decltype(v)>(v);});
 }
 
-ConsStream<std::tuple<>> guard(bool b) {
+using Unit = std::tuple<>;
+
+ConsStream<Unit> guard(bool b) {
   if (b) {
-    return ConsStream<std::tuple<>>(std::tuple<>());
+    return ConsStream<Unit>(Unit());
   } else {
-    return ConsStream<std::tuple<>>();
+    return ConsStream<Unit>();
   }
 }
 
