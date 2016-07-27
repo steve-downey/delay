@@ -395,24 +395,23 @@ auto bind2(ConsStream<Value> stream, Func const& f)
     return M();
   }
 
-  ConsStream<Value> s = stream;
-  auto y = f(s.head());
-  while (!s.isEmpty() && y.isEmpty()) {
-    s = s.tail();
-    if (!s.isEmpty()) {
-      y = f(s.head());
+  auto y = f(stream.head());
+  while (!stream.isEmpty() && y.isEmpty()) {
+    stream = stream.tail();
+    if (!stream.isEmpty()) {
+      y = f(stream.head());
     }
   }
 
-  if (s.isEmpty()) {
+  if (stream.isEmpty()) {
     return M();
   }
 
-  return M([y, s, f]() {
+  return M([y, stream, f]() {
       using T=decltype(y.head());
       return ConsCell<T>(y.head(),
                          append(y.tail(),
-                                bind2(s.tail(), f)));
+                                bind2(stream.tail(), f)));
     });
 
 }
