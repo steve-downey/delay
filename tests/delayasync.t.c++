@@ -1,4 +1,4 @@
-#include <delay.h>
+#include <delayasync.h>
 
 #include "gtest/gtest.h"
 using ::testing::Test;
@@ -9,11 +9,11 @@ int func_called;
 int func2_called;
 int func3_called;
 }
-class DelayTest : public Test {
+class DelayAsyncTest : public Test {
 protected:
-  DelayTest() {
+  DelayAsyncTest() {
   }
-  ~DelayTest() {
+  ~DelayAsyncTest() {
   }
 
   virtual void SetUp() {
@@ -29,6 +29,7 @@ public:
 };
 
 namespace {
+
 int func() {
   func_called++;
   return 5;
@@ -49,31 +50,30 @@ std::string stringTest(const char* str) {
 }
 }
 
-
-TEST_F(DelayTest, breathingTest) {
-  Delay<int> D1(1);
+TEST_F(DelayAsyncTest, breathingTest) {
+  DelayAsync<int> D1(1);
 
   int j{D1};
 
   EXPECT_EQ(1, j);
 
-  Delay<int> D2(func);
+  DelayAsync<int> D2(func);
   EXPECT_EQ(0, func_called);
 
   int k = D2;
   EXPECT_EQ(1, func_called);
   EXPECT_EQ(5, k);
 
-  Delay<int> D3 = func;
+  DelayAsync<int> D3 = func;
 
-  Delay<int> D4 = func2(3);
+  DelayAsync<int> D4 = func2(3);
   EXPECT_EQ(1, func2_called);
 
-  Delay<int> D5([]() { return func2(7); });
+  DelayAsync<int> D5([]() { return func2(7); });
 
-  Delay<int> D6 = delay(func2, 8);
+  DelayAsync<int> D6 = delayAsync(func2, 8);
 
-  Delay<int> D7 = delay(func3, 8, 1);
+  DelayAsync<int> D7 = delayAsync(func3, 8, 1);
 
   EXPECT_EQ(1, func_called);
   EXPECT_EQ(1, func2_called);
@@ -110,16 +110,16 @@ TEST_F(DelayTest, breathingTest) {
   EXPECT_EQ(3, func2_called);
   EXPECT_EQ(1, func3_called);
 
-  EXPECT_EQ(5, Delay<int>(func).get());
-  EXPECT_EQ(5, force(Delay<int>(func)));
+  EXPECT_EQ(5, DelayAsync<int>(func).get());
+  EXPECT_EQ(5, force(DelayAsync<int>(func)));
 }
 
-TEST_F(DelayTest, moveTest) {
+TEST_F(DelayAsyncTest, moveTest) {
   std::string str;
-  Delay<std::string> d1(str);
-  Delay<std::string> d2("test");
-  Delay<std::string> d3 = delay(stringTest, "this is a test");
-  Delay<std::string> d4([](){return stringTest("another test");});
+  DelayAsync<std::string> d1(str);
+  DelayAsync<std::string> d2("test");
+  DelayAsync<std::string> d3 = delayAsync(stringTest, "this is a test");
+  DelayAsync<std::string> d4([](){return stringTest("another test");});
 
   EXPECT_TRUE(d1.isForced());
   EXPECT_TRUE(d2.isForced());

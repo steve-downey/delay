@@ -11,7 +11,7 @@ int Factorial(uint32_t n) {
 }
 
 static void BM_Concat(benchmark::State& state) {
-  auto x = state.range_x();
+  auto x = state.range(0);
   int l = 0;
   while (state.KeepRunning()){
     ConsStream<int> inf = iota(0);
@@ -28,7 +28,7 @@ static void BM_Concat(benchmark::State& state) {
 BENCHMARK(BM_Concat)->Arg(8)->Arg(64)->Arg(512);
 
 static void BM_ConcatMap(benchmark::State& state) {
-  auto x = state.range_x();
+  auto x = state.range(0);
   size_t l = 0;
   while (state.KeepRunning()){
     l = 0;
@@ -47,7 +47,7 @@ static void BM_ConcatMap(benchmark::State& state) {
 BENCHMARK(BM_ConcatMap)->Arg(8)->Arg(64)->Arg(512);
 
 static void BM_Join(benchmark::State& state) {
-  auto x = state.range_x();
+  auto x = state.range(0);
   size_t l = 0;
   while (state.KeepRunning()){
     l = 0;
@@ -68,7 +68,7 @@ static void BM_Join(benchmark::State& state) {
 BENCHMARK(BM_Join)->Arg(8)->Arg(64)->Arg(512);
 
 static void BM_Join2(benchmark::State& state) {
-  auto x = state.range_x();
+  auto x = state.range(0);
   size_t l = 0;
   while (state.KeepRunning()){
     l = 0;
@@ -89,7 +89,7 @@ static void BM_Join2(benchmark::State& state) {
 BENCHMARK(BM_Join2)->Arg(8)->Arg(64)->Arg(512);
 
 static void BM_Bind(benchmark::State& state) {
-  auto x = state.range_x();
+  auto x = state.range(0);
   size_t l = 0;
   while (state.KeepRunning()){
     {
@@ -108,7 +108,7 @@ static void BM_Bind(benchmark::State& state) {
 BENCHMARK(BM_Bind)->Arg(8)->Arg(64)->Arg(512)->Arg(1<<10)->Arg(8<<10);
 
 static void BM_Bind2(benchmark::State& state) {
-  auto x = state.range_x();
+  auto x = state.range(0);
   size_t l = 0;
   while (state.KeepRunning()){
     {

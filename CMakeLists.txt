@@ -2,7 +2,7 @@
 # "Adapted" from Range-v3's top-level CMakeLists.txt
 #
 
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.5)
 set(CMAKE_LEGACY_CYGWIN_WIN32 0)
 
 
@@ -50,14 +50,14 @@ endif()
 
 # A directory to find Google Test sources.
 if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/googletest/CMakeLists.txt")
-  add_subdirectory(googletest)
+  add_subdirectory(googletest EXCLUDE_FROM_ALL)
 else()
   message("GTEST Not Found at ${CMAKE_CURRENT_SOURCE_DIR}/googletest/CMakeLists.txt")
 endif()
 
 # A directory to find Google Benchmark sources.
 if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/benchmark/CMakeLists.txt")
-  add_subdirectory(benchmark)
+  add_subdirectory(benchmark EXCLUDE_FROM_ALL)
 else()
   message("Google Benchmark Not Found at ${CMAKE_CURRENT_SOURCE_DIR}/benchmark/CMakeLists.txt")
 endif()

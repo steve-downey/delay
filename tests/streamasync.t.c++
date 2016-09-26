@@ -1,4 +1,4 @@
-#include <stream.h>
+#include <streamasync.h>
 
 #include "gtest/gtest.h"
 using ::testing::Test;
@@ -46,11 +46,11 @@ bool operator==(Double lhs, Double rhs){
 
 }
 
-class StreamTest : public Test {
+class StreamAsyncTest : public Test {
 protected:
-  StreamTest() {
+  StreamAsyncTest() {
   }
-  ~StreamTest() {
+  ~StreamAsyncTest() {
   }
 
   virtual void SetUp() {
@@ -62,12 +62,12 @@ protected:
 public:
 };
 
-TEST_F(StreamTest, breathingTest) {
+TEST_F(StreamAsyncTest, breathingTest) {
     ConsCell<int> cc2(1);
 
-    ConsStream<int> cs1;
-    ConsStream<int> cs2 = make<ConsStream>(1);
-    ConsStream<int> cs3(1);
+    ConsStreamAsync<int> cs1;
+    ConsStreamAsync<int> cs2 = make<ConsStreamAsync>(1);
+    ConsStreamAsync<int> cs3(1);
 
     EXPECT_TRUE(cs1.isEmpty());
     EXPECT_FALSE(cs2.isEmpty());
@@ -79,38 +79,38 @@ TEST_F(StreamTest, breathingTest) {
         });
     EXPECT_EQ(1, j);
 
-    ConsStream<int> str2 = cc2.tail();
+    ConsStreamAsync<int> str2 = cc2.tail();
 
     EXPECT_TRUE(str2.isEmpty());
 
     int k = cs2.head();
-    ConsStream<int> str3 = cs2.tail();
+    ConsStreamAsync<int> str3 = cs2.tail();
 
     EXPECT_EQ(1, k);
     EXPECT_TRUE(str3.isEmpty());
 
 }
 
-TEST_F(StreamTest, consTest) {
-  ConsStream<int> cs(0);
-  ConsStream<int> cs1 = cons(1, cs);
-  ConsStream<int> stream = cons(2, cs1);
+TEST_F(StreamAsyncTest, consTest) {
+  ConsStreamAsync<int> cs(0);
+  ConsStreamAsync<int> cs1 = cons(1, cs);
+  ConsStreamAsync<int> streamAsync = cons(2, cs1);
 
-  EXPECT_EQ(2, stream.head());
-  EXPECT_EQ(1, stream.tail().head());
-  EXPECT_EQ(0, stream.tail().tail().head());
-  EXPECT_TRUE(stream.tail().tail().tail().isEmpty());
+  EXPECT_EQ(2, streamAsync.head());
+  EXPECT_EQ(1, streamAsync.tail().head());
+  EXPECT_EQ(0, streamAsync.tail().tail().head());
+  EXPECT_TRUE(streamAsync.tail().tail().tail().isEmpty());
 }
 
-TEST_F(StreamTest, finiteStream) {
-  ConsStream<int> stream = rangeFrom(0, 2);
-  EXPECT_EQ(0, stream.head());
-  EXPECT_EQ(1, stream.tail().head());
-  EXPECT_EQ(2, stream.tail().tail().head());
-  EXPECT_TRUE(stream.tail().tail().tail().isEmpty());
+TEST_F(StreamAsyncTest, finiteStreamAsync) {
+  ConsStreamAsync<int> streamAsync = rangeFrom(0, 2);
+  EXPECT_EQ(0, streamAsync.head());
+  EXPECT_EQ(1, streamAsync.tail().head());
+  EXPECT_EQ(2, streamAsync.tail().tail().head());
+  EXPECT_TRUE(streamAsync.tail().tail().tail().isEmpty());
 
-  ConsStream<int>::iterator i = stream.begin();
-  ConsStream<int>::iterator e = stream.end();
+  ConsStreamAsync<int>::iterator i = streamAsync.begin();
+  ConsStreamAsync<int>::iterator e = streamAsync.end();
 
   EXPECT_EQ(0, *i);
   i++;
@@ -121,23 +121,23 @@ TEST_F(StreamTest, finiteStream) {
   EXPECT_EQ(i, e);
 
   int k = 0;
-  for(auto const& a : stream) {
+  for(auto const& a : streamAsync) {
     EXPECT_EQ(k, a);
     ++k;
   }
 }
 
-TEST_F(StreamTest, takeStream) {
-  ConsStream<int> from0to4 = rangeFrom(0, 4);
-  ConsStream<int> stream = take(from0to4, 3);
+TEST_F(StreamAsyncTest, takeStreamAsync) {
+  ConsStreamAsync<int> from0to4 = rangeFrom(0, 4);
+  ConsStreamAsync<int> streamAsync = take(from0to4, 3);
 
-  EXPECT_EQ(0, stream.head());
-  EXPECT_EQ(1, stream.tail().head());
-  EXPECT_EQ(2, stream.tail().tail().head());
-  EXPECT_TRUE(stream.tail().tail().tail().isEmpty());
+  EXPECT_EQ(0, streamAsync.head());
+  EXPECT_EQ(1, streamAsync.tail().head());
+  EXPECT_EQ(2, streamAsync.tail().tail().head());
+  EXPECT_TRUE(streamAsync.tail().tail().tail().isEmpty());
 
-  ConsStream<int>::iterator i = stream.begin();
-  ConsStream<int>::iterator e = stream.end();
+  ConsStreamAsync<int>::iterator i = streamAsync.begin();
+  ConsStreamAsync<int>::iterator e = streamAsync.end();
 
   EXPECT_EQ(0, *i);
   i++;
@@ -148,23 +148,23 @@ TEST_F(StreamTest, takeStream) {
   EXPECT_EQ(i, e);
 
   int k = 0;
-  for(auto const& a : stream) {
+  for(auto const& a : streamAsync) {
     EXPECT_EQ(k, a);
     ++k;
   }
 }
 
-TEST_F(StreamTest, takeInfStream) {
-  ConsStream<int> inf = iota(0);
-  ConsStream<int> stream = take(inf, 3);
+TEST_F(StreamAsyncTest, takeInfStreamAsync) {
+  ConsStreamAsync<int> inf = iota(0);
+  ConsStreamAsync<int> streamAsync = take(inf, 3);
 
-  EXPECT_EQ(0, stream.head());
-  EXPECT_EQ(1, stream.tail().head());
-  EXPECT_EQ(2, stream.tail().tail().head());
-  EXPECT_TRUE(stream.tail().tail().tail().isEmpty());
+  EXPECT_EQ(0, streamAsync.head());
+  EXPECT_EQ(1, streamAsync.tail().head());
+  EXPECT_EQ(2, streamAsync.tail().tail().head());
+  EXPECT_TRUE(streamAsync.tail().tail().tail().isEmpty());
 
-  ConsStream<int>::iterator i = stream.begin();
-  ConsStream<int>::iterator e = stream.end();
+  ConsStreamAsync<int>::iterator i = streamAsync.begin();
+  ConsStreamAsync<int>::iterator e = streamAsync.end();
 
   EXPECT_EQ(0, *i);
   i++;
@@ -175,17 +175,17 @@ TEST_F(StreamTest, takeInfStream) {
   EXPECT_EQ(i, e);
 
   int k = 0;
-  for(auto const& a : stream) {
+  for(auto const& a : streamAsync) {
     EXPECT_EQ(k, a);
     ++k;
   }
 }
 
-TEST_F(StreamTest, appendStream) {
-  ConsStream<int> inf = iota(0);
-  ConsStream<int> s1 = take(inf, 3);
-  ConsStream<int> s2 = take(iota(1), 3);
-  ConsStream<int> c = append(s1, s2);
+TEST_F(StreamAsyncTest, appendStreamAsync) {
+  ConsStreamAsync<int> inf = iota(0);
+  ConsStreamAsync<int> s1 = take(inf, 3);
+  ConsStreamAsync<int> s2 = take(iota(1), 3);
+  ConsStreamAsync<int> c = append(s1, s2);
 
   std::vector<int> v{0,1,2,1,2,3};
   int k = 0;
@@ -195,11 +195,11 @@ TEST_F(StreamTest, appendStream) {
   }
 }
 
-TEST_F(StreamTest, fmapStream) {
-  ConsStream<int> inf = iota(0);
+TEST_F(StreamAsyncTest, fmapStreamAsync) {
+  ConsStreamAsync<int> inf = iota(0);
 
-  ConsStream<int> square = fmap(inf, [](int i){return i*i;});
-  ConsStream<int> front = take(square, 5);
+  ConsStreamAsync<int> square = fmap(inf, [](int i){return i*i;});
+  ConsStreamAsync<int> front = take(square, 5);
 
   std::vector<int> v{0,1,4,9,16,25};
   int k = 0;
@@ -209,8 +209,8 @@ TEST_F(StreamTest, fmapStream) {
   }
   EXPECT_EQ(5, k);
 
-  ConsStream<double> square2 = fmap(inf, [](int i) -> double {return i*i;});
-  ConsStream<double> front2 = take(square2, 5);
+  ConsStreamAsync<double> square2 = fmap(inf, [](int i) -> double {return i*i;});
+  ConsStreamAsync<double> front2 = take(square2, 5);
 
   std::vector<int> v2{0,1,4,9,16,25};
   int k2 = 0;
@@ -221,11 +221,11 @@ TEST_F(StreamTest, fmapStream) {
   EXPECT_EQ(5, k2);
 }
 
-TEST_F(StreamTest, fmapStream2) {
-  ConsStream<int> inf = iota(0);
+TEST_F(StreamAsyncTest, fmapStreamAsync2) {
+  ConsStreamAsync<int> inf = iota(0);
 
-  ConsStream<Int> square = fmap(inf, [](int i){return Int(i*i);});
-  ConsStream<Int> front = take(square, 5);
+  ConsStreamAsync<Int> square = fmap(inf, [](int i){return Int(i*i);});
+  ConsStreamAsync<Int> front = take(square, 5);
 
   std::vector<int> v{0,1,4,9,16,25};
   int k = 0;
@@ -235,8 +235,8 @@ TEST_F(StreamTest, fmapStream2) {
   }
   EXPECT_EQ(5, k);
 
-  ConsStream<Double> square2 = fmap(inf, [](int i) -> Double {return Double(i*i);});
-  ConsStream<Double> front2 = take(square2, 5);
+  ConsStreamAsync<Double> square2 = fmap(inf, [](int i) -> Double {return Double(i*i);});
+  ConsStreamAsync<Double> front2 = take(square2, 5);
 
   std::vector<int> v2{0,1,4,9,16,25};
   int k2 = 0;
@@ -247,11 +247,11 @@ TEST_F(StreamTest, fmapStream2) {
   EXPECT_EQ(5, k2);
 }
 
-TEST_F(StreamTest, countForced) {
-  ConsStream<int> inf = iota(0);
+TEST_F(StreamAsyncTest, countForced) {
+  ConsStreamAsync<int> inf = iota(0);
   EXPECT_EQ(0, inf.countForced());
 
-  ConsStream<int> take3 = take(inf, 3);
+  ConsStreamAsync<int> take3 = take(inf, 3);
   EXPECT_EQ(0, take3.countForced());
 
   int k = 0;
@@ -263,20 +263,20 @@ TEST_F(StreamTest, countForced) {
   EXPECT_EQ(3, take3.countForced());
   EXPECT_EQ(3, inf.countForced());
 
-  ConsStream<int> iota3 = iota(3);
-  ConsStream<int> inf2 = append(take3, iota3);
+  ConsStreamAsync<int> iota3 = iota(3);
+  ConsStreamAsync<int> inf2 = append(take3, iota3);
   EXPECT_EQ(0, inf2.head());
   EXPECT_EQ(1, inf2.countForced());
   EXPECT_EQ(0, iota3.countForced());
 }
 
-TEST_F(StreamTest, concatStreamList) {
-  ConsStream<int> inf = iota(0);
-  ConsStream<int> s1 = take(inf, 3);
-  ConsStream<ConsStream<int>> s2(take(iota(1), 3));
-  ConsStream<ConsStream<int>> stream = cons(s1, s2);
+TEST_F(StreamAsyncTest, concatStreamAsyncList) {
+  ConsStreamAsync<int> inf = iota(0);
+  ConsStreamAsync<int> s1 = take(inf, 3);
+  ConsStreamAsync<ConsStreamAsync<int>> s2(take(iota(1), 3));
+  ConsStreamAsync<ConsStreamAsync<int>> streamAsync = cons(s1, s2);
 
-  ConsStream<int> c = concat(stream);
+  ConsStreamAsync<int> c = concat(streamAsync);
 
   std::vector<int> v{0,1,2,1,2,3};
   int k = 0;
@@ -287,12 +287,12 @@ TEST_F(StreamTest, concatStreamList) {
   EXPECT_EQ(6, k);
 }
 
-TEST_F(StreamTest, concatStreamList2) {
-  ConsStream<int> inf = iota(0);
-  ConsStream<ConsStream<int>> s2 = fmap(inf, [](int i){return rangeFrom(0, i);});
-  ConsStream<ConsStream<int>> s3 = take(s2, 3);
+TEST_F(StreamAsyncTest, concatStreamAsyncList2) {
+  ConsStreamAsync<int> inf = iota(0);
+  ConsStreamAsync<ConsStreamAsync<int>> s2 = fmap(inf, [](int i){return rangeFrom(0, i);});
+  ConsStreamAsync<ConsStreamAsync<int>> s3 = take(s2, 3);
 
-  ConsStream<int> c = concat(s3);
+  ConsStreamAsync<int> c = concat(s3);
 
   std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
   int k = 0;
@@ -308,11 +308,11 @@ TEST_F(StreamTest, concatStreamList2) {
   EXPECT_EQ(6, c.countForced());
 }
 
-TEST_F(StreamTest, concatInfStreamList) {
-  ConsStream<int> inf = iota(0);
-  ConsStream<ConsStream<int>> s2 = fmap(inf, [](int i){return rangeFrom(0, i);});
+TEST_F(StreamAsyncTest, concatInfStreamAsyncList) {
+  ConsStreamAsync<int> inf = iota(0);
+  ConsStreamAsync<ConsStreamAsync<int>> s2 = fmap(inf, [](int i){return rangeFrom(0, i);});
 
-  ConsStream<int> c = concat(s2);
+  ConsStreamAsync<int> c = concat(s2);
 
   std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
   int k = 0;
@@ -327,11 +327,11 @@ TEST_F(StreamTest, concatInfStreamList) {
   EXPECT_EQ(10, c.countForced());
 }
 
-TEST_F(StreamTest, concatInfStreamList2) {
-  ConsStream<Int> inf = iota(Int(0));
-  ConsStream<ConsStream<Int>> s2 = fmap(inf, [](Int i){return rangeFrom(Int(0), i);});
+TEST_F(StreamAsyncTest, concatInfStreamAsyncList2) {
+  ConsStreamAsync<Int> inf = iota(Int(0));
+  ConsStreamAsync<ConsStreamAsync<Int>> s2 = fmap(inf, [](Int i){return rangeFrom(Int(0), i);});
 
-  ConsStream<Int> c = concat(s2);
+  ConsStreamAsync<Int> c = concat(s2);
 
   std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
   int k = 0;
@@ -346,12 +346,12 @@ TEST_F(StreamTest, concatInfStreamList2) {
   EXPECT_EQ(10, c.countForced());
 }
 
-TEST_F(StreamTest, joinStreamList) {
-  ConsStream<int> inf = iota(0);
-  ConsStream<ConsStream<int>> s2 = fmap(inf, [](int i){return rangeFrom(0, i);});
-  ConsStream<int> s3 = join(s2);
+TEST_F(StreamAsyncTest, joinStreamAsyncList) {
+  ConsStreamAsync<int> inf = iota(0);
+  ConsStreamAsync<ConsStreamAsync<int>> s2 = fmap(inf, [](int i){return rangeFrom(0, i);});
+  ConsStreamAsync<int> s3 = join(s2);
 
-  ConsStream<int> c = take(s3, 6);
+  ConsStreamAsync<int> c = take(s3, 6);
 
   std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
   int k = 0;
@@ -367,11 +367,11 @@ TEST_F(StreamTest, joinStreamList) {
 
 }
 
-TEST_F(StreamTest, joinStreamList2) {
-  ConsStream<int> inf = iota(0);
-  ConsStream<int> s3 = join(fmap(inf, [](int i){return rangeFrom(0, i);}));
+TEST_F(StreamAsyncTest, joinStreamAsyncList2) {
+  ConsStreamAsync<int> inf = iota(0);
+  ConsStreamAsync<int> s3 = join(fmap(inf, [](int i){return rangeFrom(0, i);}));
 
-  ConsStream<int> c = take(s3, 6);
+  ConsStreamAsync<int> c = take(s3, 6);
 
   std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
   int k = 0;
@@ -386,14 +386,14 @@ TEST_F(StreamTest, joinStreamList2) {
 
 }
 
-TEST_F(StreamTest, bindStreamList) {
-  ConsStream<int> inf = iota(0);
-  ConsStream<int> s3 = bind(inf,
+TEST_F(StreamAsyncTest, bindStreamAsyncList) {
+  ConsStreamAsync<int> inf = iota(0);
+  ConsStreamAsync<int> s3 = bind(inf,
                             [](int i){return rangeFrom(0, i);});
 
   EXPECT_EQ(0, s3.head());
 
-  ConsStream<int> c = take(s3, 6);
+  ConsStreamAsync<int> c = take(s3, 6);
 
   std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
   int k = 0;
@@ -408,14 +408,14 @@ TEST_F(StreamTest, bindStreamList) {
 
 }
 
-TEST_F(StreamTest, bindStreamList2) {
-  ConsStream<int> inf = iota(0);
-  ConsStream<Int> s3 = bind(inf,
+TEST_F(StreamAsyncTest, bindStreamAsyncList2) {
+  ConsStreamAsync<int> inf = iota(0);
+  ConsStreamAsync<Int> s3 = bind(inf,
                             [](int i){return rangeFrom(Int(0), Int(i));});
 
   EXPECT_EQ(Int(), s3.head());
 
-  ConsStream<Int> c = take(s3, 6);
+  ConsStreamAsync<Int> c = take(s3, 6);
 
   std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
   int k = 0;
@@ -430,14 +430,14 @@ TEST_F(StreamTest, bindStreamList2) {
 
 }
 
-TEST_F(StreamTest, bind2StreamList) {
-  ConsStream<int> inf = iota(0);
-  ConsStream<int> s3 = bind2(inf,
+TEST_F(StreamAsyncTest, bind2StreamAsyncList) {
+  ConsStreamAsync<int> inf = iota(0);
+  ConsStreamAsync<int> s3 = bind2(inf,
                              [](int i){return rangeFrom(0, i);});
 
   EXPECT_EQ(0, s3.head());
 
-  ConsStream<int> c = take(s3, 6);
+  ConsStreamAsync<int> c = take(s3, 6);
 
   std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
   int k = 0;
@@ -452,14 +452,14 @@ TEST_F(StreamTest, bind2StreamList) {
 
 }
 
-TEST_F(StreamTest, bind2StreamList2) {
-  ConsStream<int> inf = iota(0);
-  ConsStream<Int> s3 = bind2(inf,
+TEST_F(StreamAsyncTest, bind2StreamAsyncList2) {
+  ConsStreamAsync<int> inf = iota(0);
+  ConsStreamAsync<Int> s3 = bind2(inf,
                              [](int i){return rangeFrom(Int(0), Int(i));});
 
   EXPECT_EQ(Int(), s3.head());
 
-  ConsStream<Int> c = take(s3, 6);
+  ConsStreamAsync<Int> c = take(s3, 6);
 
   std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
   int k = 0;
@@ -474,14 +474,14 @@ TEST_F(StreamTest, bind2StreamList2) {
 
 }
 
-TEST_F(StreamTest, thenStreamList) {
-  ConsStream<int> inf = iota(0);
-  ConsStream<int> s3 = then(inf,
+TEST_F(StreamAsyncTest, thenStreamAsyncList) {
+  ConsStreamAsync<int> inf = iota(0);
+  ConsStreamAsync<int> s3 = then(inf,
                             [](){return rangeFrom(0, 2);});
 
   EXPECT_EQ(0, s3.head());
 
-  ConsStream<int> c = take(s3, 6);
+  ConsStreamAsync<int> c = take(s3, 6);
 
   std::vector<int> v{0,1,2,0,1,2,0,1,2,0};
   int k = 0;
@@ -496,14 +496,14 @@ TEST_F(StreamTest, thenStreamList) {
 
 }
 
-TEST_F(StreamTest, then2StreamList) {
-  ConsStream<int> inf = iota(0);
-  ConsStream<int> s3 = then2(inf,
+TEST_F(StreamAsyncTest, then2StreamAsyncList) {
+  ConsStreamAsync<int> inf = iota(0);
+  ConsStreamAsync<int> s3 = then2(inf,
                             [](){return rangeFrom(0, 2);});
 
   EXPECT_EQ(0, s3.head());
 
-  ConsStream<int> c = take(s3, 6);
+  ConsStreamAsync<int> c = take(s3, 6);
 
   std::vector<int> v{0,1,2,0,1,2,0,1,2,0};
   int k = 0;
@@ -518,12 +518,12 @@ TEST_F(StreamTest, then2StreamList) {
 
 }
 
-TEST_F(StreamTest, join2StreamList) {
-  ConsStream<int> inf = iota(0);
-  ConsStream<ConsStream<int>> s2 = fmap(inf, [](int i){return rangeFrom(0, i);});
-  ConsStream<int> s3 = join2(s2);
+TEST_F(StreamAsyncTest, join2StreamAsyncList) {
+  ConsStreamAsync<int> inf = iota(0);
+  ConsStreamAsync<ConsStreamAsync<int>> s2 = fmap(inf, [](int i){return rangeFrom(0, i);});
+  ConsStreamAsync<int> s3 = join2(s2);
 
-  ConsStream<int> c = take(s3, 6);
+  ConsStreamAsync<int> c = take(s3, 6);
 
   std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
   int k = 0;
@@ -539,11 +539,11 @@ TEST_F(StreamTest, join2StreamList) {
 
 }
 
-TEST_F(StreamTest, join2StreamList2) {
-  ConsStream<int> inf = iota(0);
-  ConsStream<int> s3 = join2(fmap(inf, [](int i){return rangeFrom(0, i);}));
+TEST_F(StreamAsyncTest, join2StreamAsyncList2) {
+  ConsStreamAsync<int> inf = iota(0);
+  ConsStreamAsync<int> s3 = join2(fmap(inf, [](int i){return rangeFrom(0, i);}));
 
-  ConsStream<int> c = take(s3, 6);
+  ConsStreamAsync<int> c = take(s3, 6);
 
   std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
   int k = 0;
@@ -558,30 +558,32 @@ TEST_F(StreamTest, join2StreamList2) {
 
 }
 
-TEST_F(StreamTest, guard) {
-  EXPECT_FALSE(guard(true).isEmpty());
-  EXPECT_TRUE(guard(false).isEmpty());
+TEST_F(StreamAsyncTest, guard) {
+  EXPECT_FALSE(guardAsync(true).isEmpty());
+  EXPECT_TRUE(guardAsync(false).isEmpty());
 }
 
+
 namespace {
-ConsStream<std::tuple<int, int, int>> triples() {
+
+ConsStreamAsync<std::tuple<int, int, int>> triples() {
   return bind(iota(1), [](int z) {
       return bind(rangeFrom(1, z), [z](int x) {
           return bind(rangeFrom(x, z), [x, z](int y) {
-              return then(guard(x*x + y*y == z*z), [x, y, z]() {
-                  return make<ConsStream>(std::make_tuple(x, y, z));
+              return then(guardAsync(x*x + y*y == z*z), [x, y, z]() {
+                  return make<ConsStreamAsync>(std::make_tuple(x, y, z));
                 });
             });
         });
     });
 }
 
-ConsStream<std::tuple<int, int, int>> triples2() {
+ConsStreamAsync<std::tuple<int, int, int>> triples2() {
   return bind2(iota(1), [](int z) {
       return bind2(rangeFrom(1, z), [z](int x) {
           return bind2(rangeFrom(x, z), [x, z](int y) {
-              return then2(guard(x*x + y*y == z*z), [x, y, z]() {
-                  return make<ConsStream>(std::make_tuple(x, y, z));
+              return then2(guardAsync(x*x + y*y == z*z), [x, y, z]() {
+                  return make<ConsStreamAsync>(std::make_tuple(x, y, z));
                 });
             });
         });
@@ -589,8 +591,7 @@ ConsStream<std::tuple<int, int, int>> triples2() {
 }
 }
 
-
-TEST_F(StreamTest, pythag) {
+TEST_F(StreamAsyncTest, pythag) {
   auto trip = triples();
   EXPECT_EQ(std::make_tuple(3,4,5), trip.head());
 
@@ -607,7 +608,7 @@ TEST_F(StreamTest, pythag) {
 
 }
 
-TEST_F(StreamTest, pythag2) {
+TEST_F(StreamAsyncTest, pythag2) {
   auto trip = triples2();
   EXPECT_EQ(std::make_tuple(3,4,5), trip.head());
 
@@ -625,7 +626,7 @@ TEST_F(StreamTest, pythag2) {
 }
 
 
-TEST_F(StreamTest, strictFuncs) {
+TEST_F(StreamAsyncTest, strictFuncs) {
   auto from35 = rangeFrom(3,5);
   EXPECT_EQ(5, last(from35));
   auto init35 = init(from35);
@@ -634,7 +635,7 @@ TEST_F(StreamTest, strictFuncs) {
   EXPECT_EQ(2u, length(init35));
 }
 
-TEST_F(StreamTest, filter) {
+TEST_F(StreamAsyncTest, filter) {
   auto inf = iota(1);
   auto even = filter([](int i) {return 0==(i%2);}, inf);
   auto first10 = take(even, 10);
@@ -642,7 +643,7 @@ TEST_F(StreamTest, filter) {
   EXPECT_EQ(20, last(first10));
 }
 
-TEST_F(StreamTest, drop) {
+TEST_F(StreamAsyncTest, drop) {
   auto inf = iota(3);
   auto drop10 = drop(inf, 10);
   EXPECT_EQ(13, drop10.head());
@@ -665,7 +666,7 @@ public:
   }
 };
 
-TEST_F(StreamTest, dot) {
+TEST_F(StreamAsyncTest, dot) {
   auto f = [](int i) {return i+1;};
   auto g = [](int j) {return 2*j;};
   auto comp = dot(f,g);
@@ -689,12 +690,12 @@ TEST_F(StreamTest, dot) {
   EXPECT_EQ(12, comp5(3));
 }
 
-TEST_F(StreamTest, concatMapTest) {
+TEST_F(StreamAsyncTest, concatMapTest) {
   auto list = [](int i){return rangeFrom(0, i);};
 
-  ConsStream<int> mapped = concatMap(list, rangeFrom(0, 4));
+  ConsStreamAsync<int> mapped = concatMap(list, rangeFrom(0, 4));
 
-  ConsStream<int> c = take(mapped, 6);
+  ConsStreamAsync<int> c = take(mapped, 6);
 
   std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
   int k = 0;
@@ -707,12 +708,12 @@ TEST_F(StreamTest, concatMapTest) {
   EXPECT_EQ(6, mapped.countForced());
 }
 
-TEST_F(StreamTest, concatMapTest2) {
+TEST_F(StreamAsyncTest, concatMapTest2) {
   auto list = [](int i){return rangeFrom(0, i);};
 
-  ConsStream<int> mapped = concatMap(list, iota(0));
+  ConsStreamAsync<int> mapped = concatMap(list, iota(0));
 
-  ConsStream<int> c = take(mapped, 6);
+  ConsStreamAsync<int> c = take(mapped, 6);
 
   std::vector<int> v{0,0,1,0,1,2,0,1,2,3};
   int k = 0;
@@ -725,7 +726,7 @@ TEST_F(StreamTest, concatMapTest2) {
   EXPECT_EQ(6, mapped.countForced());
 }
 
-TEST_F(StreamTest, foldrTest) {
+TEST_F(StreamAsyncTest, foldrTest) {
   auto inf = iota(1);
   auto even = filter([](int i) {return 0==(i%2);}, inf);
   auto first5 = take(even, 5);
@@ -738,7 +739,7 @@ TEST_F(StreamTest, foldrTest) {
   EXPECT_EQ(5, first5.countForced());
 }
 
-TEST_F(StreamTest, foldrTest2) {
+TEST_F(StreamAsyncTest, foldrTest2) {
   auto inf = iota(1);
   auto even = filter([](int i) {return 0==(i%2);}, inf);
   auto first5 = take(even, 5);
@@ -752,29 +753,29 @@ TEST_F(StreamTest, foldrTest2) {
 }
 
 
-TEST_F(StreamTest, appTest) {
-  ConsStream<int> inf = iota(0);
-  ConsStream<int> s1 = take(inf, 3);
+TEST_F(StreamAsyncTest, appTest) {
+  ConsStreamAsync<int> inf = iota(0);
+  ConsStreamAsync<int> s1 = take(inf, 3);
 
   auto add1Lambda = [](int i) {return i+1;};
   std::function<int(int)> add1 = add1Lambda;
-  auto streamFunc = make<ConsStream>(add1);
+  auto streamAsyncFunc = make<ConsStreamAsync>(add1);
 
-  auto result = app(streamFunc,s1);
+  auto result = app(streamAsyncFunc,s1);
 
   EXPECT_EQ(1, result.head());
 
 }
 
-TEST_F(StreamTest, app2Test) {
-  ConsStream<int> inf = iota(0);
-  ConsStream<int> s1 = take(inf, 3);
+TEST_F(StreamAsyncTest, app2Test) {
+  ConsStreamAsync<int> inf = iota(0);
+  ConsStreamAsync<int> s1 = take(inf, 3);
 
   auto add1Lambda = [](int i) {return i+1;};
   std::function<int(int)> add1 = add1Lambda;
-  auto streamFunc = make<ConsStream>(add1);
+  auto streamAsyncFunc = make<ConsStreamAsync>(add1);
 
-  auto result = app2(streamFunc,s1);
+  auto result = app2(streamAsyncFunc,s1);
 
   EXPECT_EQ(1, result.head());
 
@@ -800,6 +801,6 @@ public:
 };
 }
 
-template class ConsStreamIterator<int>;
-template class ConsStream<std::string>;
-template class ConsStream<NoDefault>;
+template class ConsStreamAsyncIterator<int>;
+template class ConsStreamAsync<std::string>;
+template class ConsStreamAsync<NoDefault>;
