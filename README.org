@@ -1,0 +1,21 @@
+#+OPTIONS: html-link-use-abs-url:nil html-postamble:auto html-preamble:t
+#+OPTIONS: html-scripts:t html-style:t html5-fancy:nil tex:t
+#+HTML_DOCTYPE: xhtml-strict
+#+HTML_CONTAINER: div
+#+DESCRIPTION:
+#+KEYWORDS:
+#+HTML_LINK_HOME:
+#+HTML_LINK_UP:
+#+HTML_MATHJAX:
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="http://sundev3.dev.bloomberg.com/~sdowney/smd-zenburn.css" />
+#+HTML_HEAD_EXTRA:
+#+SUBTITLE:
+#+INFOJS_OPT:
+#+CREATOR: <a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.1 (<a href="http://orgmode.org">Org</a> mode 8.3.5)
+#+LATEX_HEADER:
+
+* Delayed Streams in C++
+
+This is a toy project for learning how to implement delayed monadic streams in C++. It's inspired by Bartosz Milewski's "Getting Lazy with C++" [https://bartoszmilewski.com/2014/04/21/getting-lazy-with-c/] . I was trying to figure out how this could work, and how it could be made thread-safe. I also wanted a maximally lazy fold, such that an infinite stream could still be folded. Much of that was based on suggestions from the Scheme SRFI 45 [http://srfi.schemers.org/srfi-45/srfi-45.html]
+
+Other goals were getting this working with CMake, Google Test, and Google Benchmark.
