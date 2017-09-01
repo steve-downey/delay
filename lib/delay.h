@@ -24,11 +24,10 @@ class Delay {
   mutable std::atomic_int evaled_;
   mutable std::mutex lock_;
 
-  template <typename Arg>
-  void setValue(Arg&& arg) const {
+  void setValue() const {
     std::unique_lock<std::mutex> guard(lock_);
     if (!evaled_) {
-      ::new (&value_) Value(std::move(arg));
+      ::new (&value_) Value(func_());
       func_ = Func();
       evaled_.store(1, std::memory_order_release);
     }
@@ -69,7 +68,7 @@ public:
   Value const& get() const {
     int evaled = evaled_.load(std::memory_order_acquire);
     if (!evaled) {
-      setValue(func_());
+      setValue();
     }
     return *reinterpret_cast<Value*>(std::addressof(this->value_));
   }

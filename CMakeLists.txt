@@ -77,6 +77,7 @@ endif()
 
 # A directory to find Google Benchmark sources.
 if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/benchmark/CMakeLists.txt")
+  include_directories(benchmark/include)
   add_subdirectory(benchmarks)
 else()
   message("Micro benchmarks not being built")
