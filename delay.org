@@ -1,0 +1,148 @@
+#+OPTIONS: ':nil *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline author:t c:nil
+#+OPTIONS: creator:nil d:(not "LOGBOOK") date:t e:t email:nil f:t inline:t
+#+OPTIONS: num:t p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
+#+OPTIONS: timestamp:t title:t toc:t todo:t |:t
+#+TITLE: Delayed Evaluation in C++
+#+DATE: <2016-10-03 Mon>
+#+AUTHOR: Steve Downey
+#+EMAIL: sdowney@sdowney.org
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: noexport
+
+#+OPTIONS: html-link-use-abs-url:nil html-postamble:auto html-preamble:t
+#+OPTIONS: html-scripts:t html-style:t html5-fancy:nil tex:t
+#+HTML_DOCTYPE: xhtml-strict
+#+HTML_CONTAINER: div
+#+DESCRIPTION:
+#+KEYWORDS:
+#+HTML_LINK_HOME:
+#+HTML_LINK_UP:
+#+HTML_MATHJAX:
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://raw.githubusercontent.com/steve-downey/css/master/smd-zenburn.css" />
+#+HTML_HEAD_EXTRA:
+#+SUBTITLE:
+#+INFOJS_OPT:
+#+CREATOR: <a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.1.1 (<a href="http://orgmode.org">Org</a> mode 8.3.5)
+#+CREATOR: Emacs 25.1.1 (Org mode 8.3.6)
+
+#+LATEX_HEADER:
+
+The goal of this project was to understand what could be done with lazy evaluation, particularly lazy lists, in C++. I wanted it to be demonstrably thread-safe, and the stream to be at least somewhat useable as a functor, applicative, and monad. That meant also playing with a fair bit of generic programming. The code assumes c++14 or better.
+
+Along the way, I discovered that there's a lazy evaluator built in as part of std::, and that it's a bit inconvienent to use, at least for a memo-izing lazy evaluator. I'll get to that later.
+
+The code is in Github, at [[https://github.com/steve-downey/delay][Delay]] along with all of the tragic history and mistakes I made along the way. It turns out to be very easy to write template code that is horribly wrong without tests that make sure that code is getting exercised. Trying to get perfect forwarding right, for example, meant often badly broken code in the r-value reference side.
+
+This was inspired by Bartosz Milewski's article [[https://bartoszmilewski.com/2014/04/21/getting-lazy-with-c][Getting Lazy with C++]] and my attempts at understanding it. Some of the approaches to lazy/delay/force are also inspired by the Scheme SRFI [[http://srfi.schemers.org/srfi-45/srfi-45.html][Primitives for Expressing Iterative Lazy Algorithms]], which helped me understand why folds needed to be even lazier than lazy. The thread safety approach, in my hand rolled code, is based on Jeff Preshing's articles about atomics, and in particular [[http://preshing.com/20130930/double-checked-locking-is-fixed-in-cpp11/][Double-Checked Locking is Fixed In C++11.]]
+
+All of the mistakes, errors, and infelicities are my own.
+
+* Goal code to make work
+
+The basic goal was to be able to use a lazy stream as the non-deterministic monad in C++. That means that streams combine to allow all possible paths of execution, with possible rejection of some paths, at which point you can back up and continue on other paths. All of the paths are executed until you have the result you want. In the concrete case, because I wanted to understand what was really going on, the end goal was Pythagorean triples. A list of the first N  3-tuples that satisfy \(x^2 + y^2 = z^2\). In Haskell
+#+BEGIN_SRC haskell
+import Control.Monad
+
+main = print $ last (take 1000 triples')
+
+triples' = do
+    z <- [1..]
+    x <- [1..z]
+    y <- [x..z]
+    guard (x^2 + y^2 == z^2)
+    return (x, y, z)
+
+
+#+END_SRC
+
+The function triples' draws z from a unbounded list starting at 1, draws x from a list from 1 to z, and y from a list from x to z, the guard function requires that \(x^2 + y^2 == z ^2\), and if that is true, the triple (x,y,z) will be a element in the list that is returned. There's a fair bit of monadic magic here, if you're not familiar with how that works. Since this is a C++ implementation, there will be a lot more explicit detail, once we get there.
+
+The main function asks for the first 1000 elements of the unbounded list, and then prints the last. This program serves as a benchmark, to see how badly I'm doing against a language that implements this all for 'free'.
+
+On my machine, with ghc -O3, this is the result:
+#+BEGIN_EXAMPLE
+sdowney@titania:~/src/delay/bench (master $)
+$ time ./triple-hs
+(460,1008,1108)
+
+real	0m12.754s
+user	0m12.589s
+sys	0m0.063s
+
+#+END_EXAMPLE
+
+For the eventual resulting code, I'm not completely off the mark:
+#+BEGIN_EXAMPLE
+sdowney@titania:~/src/delay/build-gcc6 (master $)
+$ time ./bench2
+460,1008,1108
+
+real	0m15.361s
+user	0m15.220s
+sys	0m0.016s
+
+#+END_EXAMPLE
+
+There's a bunch of code between here and there, though.
+
+* Delayed Evaluation
+
+The core of a lazy stream is delaying a function evaluation until it is called for. We need to capture the callable being called, and the arguments that will be passed to it, and then force the evaluation of the function once and only once. One of the names for the technique is a thunk, which is in the hopes of when we think we need it, someone has already thunk it. In this implementation, the result of the evaluation is captured for possible reuse. This is one form of memoization. However, if there are other, independant, delayed evals with the same parameters, they get no benefit of memoization, unlike implementations using a map of arg-tuples and results.
+
+I chose to capture the callable in Delay as a std::function. This allows Delay to be templatized only on the return type of the callable, without me having to write all the type-erasure code. I experimented with storing the result as an std::optional, but eventually decide to use std::aligned_storage and a flag to indicate that the callable had been evaluated.
+
+I also chose, because of my relatively good experience using Todd Veldhuizen's [[https://en.wikipedia.org/wiki/Expression_templates][Expression Templates]] to provide a conversion operator to the type of the delayed expression, allowing forcing when used in an expression.
+
+This is the interface for Delay<T>
+
+#+BEGIN_SRC c++
+template <typename Value>
+class Delay {
+
+  public:
+    Delay() = default;
+    Delay(const Delay& rhs);
+
+    Delay(Value const& value);
+    Delay(Value&& value);
+
+    template <typename Action,
+              typename = typename std::enable_if<isFuncConv<Action>::value>::type>
+    Delay(Action&& A);
+
+    ~Delay();
+
+    Value const& get();
+
+    operator Value const&() const;
+
+    bool isForced();
+};
+
+
+#+END_SRC
+
+Holding whatever arguments to the callable are bound up into the std::function, which is of type std::function<Value()> . Already evaluated Values can be stored in a Delay, this occasionally helps keeping the number of templates required down. Action is something that is convertible to the interal std::function, and is the normally used constructor. There's a conversion operator, and an explicit getter.
+
+The isForced() is used in testing, to make sure what I think is happening, really is, and no more than I think is. It turned out to be fairly common to have one more Delay evaluated than I naively expected, because an algorithm needed to look ahead by one.
+
+Construction from a callable and args is put in an free function. This simplifies the number of overloads on the constructor, and is usually quite clear in code.
+
+#+BEGIN_SRC c++
+template <typename F, typename... Args>
+auto delay(F&& f, Args&&... args) -> Delay<decltype(f(args...))> {
+  using Value = decltype(f(args...));
+  return Delay<Value>(
+      [ args..., f_ = std::forward<F>(f) ]() { return f_(args...); });
+}
+
+#+END_SRC
+That captures the args in a lambda, which is then wrapped up in the Delay object.
+
+The other free function is force, where there are two variants, one on const& and one on &&, each evaluating the delay object in a Value const& context, forcing evaluation.
+
+
+# Local Variables:
+# org-html-htmlize-output-type: inline-css
+# End:
