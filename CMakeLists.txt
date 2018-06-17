@@ -32,8 +32,8 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -ftemplate-backtrace-limit=0")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -march=native")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -ftemplate-backtrace-limit=0")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
   set(LLVM_ROOT "$ENV{LLVM_ROOT}" CACHE PATH "Path to LLVM installation")
   if(LLVM_ROOT)
     message(STATUS "LLVM Root: ${LLVM_ROOT}")
@@ -46,7 +46,6 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set(CMAKE_CXX_FLAGS_DEBUG "-O0 -fno-inline -g3 -fstack-protector-all")
   set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -g0 -DNDEBUG")
 endif()
-
 
 # A directory to find Google Test sources.
 if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/googletest/CMakeLists.txt")
